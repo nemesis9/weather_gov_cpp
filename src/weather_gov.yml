@@ -1,0 +1,71 @@
+
+LOG:
+  LOGNAME: "WEATHER"
+  FILENAME: "weather.log"
+  ROTATE_SIZE: 10000000
+  ROTATE_FILES: 10
+  JOURNAL: False
+  LOGDIR: "scriptdir"
+  LEVEL: "DEBUG"
+  USE_CONSOLE: True
+
+HOST:
+  BASE_URL: "https://api.weather.gov"
+  STATIONS_URL: "https://api.weather.gov/stations/"
+
+DB:
+   "host"              : "localhost"
+   "user"              : "weather_user"
+   "password"          : 'weather_pass'
+   "database"          : "weather_gov"
+
+STATIONS:
+  "Williams AFB/Chandl"                : "KIWA"
+  "Phoenix/Sky Harbor"                 : "KPHX"
+#  "Casa Grande Municipal Airport"      : "KCGZ"
+#  "Chandler Municipal Airport"         : "KCHD"
+#  "Williams/Clark Memorial Airport"    : "KCMR"
+#  "Davis-Monthan AFB"                  : "KDMA"
+#  "Douglas Bisbee Intl Airpot"         : "KDUG"
+#  "Deer Valley/Phoenix"                : "KDVT"
+#  "Mesa/Falcon Field"                  : "KFFZ"
+#  "Fort Huachuca/Libby"                : "KFHU"
+#  "Flagstaff (amos)"                   : "KFLG"
+#  "Gila Bend (aaf)"                    : "KGBN"
+#  "Grand Canyon Park"                  : "KGCN"
+#  "Grand Canyon, Valle Airpot"         : "K40G"
+#  "Glendale"                           : "KGEU"
+#  "Goodyear Municipal"                 : "KGYR"
+#  "Bull Head City"                     : "KIFP"
+#  "Kingman (amos)"                     : "KIGM"
+#  "Winslow (aut)"                      : "KINW"
+#  "Luke AFB/Phoenix"                   : "KLUF"
+#  "Yuma Mcas"                          : "KNYL"
+#  "Nogales Intl Airport"               : "KOLS"
+#  "Payson Airport"                     : "KPAN"
+#  "Page Muni (amos)"                   : "KPGA"
+#  "Prescot/Love Fld"                   : "KPRC"
+#  "Window Rock (was P34)"              : "KRQE"
+#  "Safford Municipal"                  : "KSAD"
+#  "Scottsdale Muni"                    : "KSDL"
+#  "Sedona Airport"                     : "KSEZ"
+#  "St. Johns Air Park"                 : "KSJN"
+#  "Show Low Municipal"                 : "KSOW"
+#  "Tucson Intl Airport"                : "KTUS"
+#  "WhiteRiver Airport"                 : "KWTR"
+#  "Yuma"                              : "KYUM"
+
+
+#FORECAST:
+#  FORECAST_URL: "forecast/"
+
+#HISTORY:
+#  HISTORY_URL: "history/"
+
+#HISTORY_SUMMARY:
+#  HISTORY_SUMMARY_URL: "history_summary/"
+
+#KEY:
+#  APIKEY:  "HPF1HR5F36GECF6JAZ9NPM19E"
+
+
