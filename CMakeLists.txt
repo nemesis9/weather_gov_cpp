@@ -8,6 +8,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(SOURCES
 	src/weather_gov.cpp
+	src/station.cpp
+	include/logger.h
 )
 
 #set(TEST_SOURCES
@@ -36,11 +38,11 @@ if(NOT yaml-cpp_POPULATED)
 endif()
 target_link_libraries(weather_gov PUBLIC yaml-cpp::yaml-cpp) # The library or executable that require yaml-cpp library
 
-#add_custom_command(
-#        TARGET weather_gov POST_BUILD
-#        COMMAND ${CMAKE_COMMAND} -E copy
-#                ${CMAKE_SOURCE_DIR}/weather_gov.yml
-#                ${CMAKE_CURRENT_BINARY_DIR})
+
+FetchContent_Declare(cpr GIT_REPOSITORY https://github.com/libcpr/cpr.git
+                         GIT_TAG master) # Replace with your desired git commit from: https://github.com/libcpr/cpr/releases
+FetchContent_MakeAvailable(cpr)
+target_link_libraries(weather_gov PUBLIC cpr::cpr) # The library or executable that require cpr library
 
 add_custom_target(copy-test-config ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/weather_gov.yml)
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/weather_gov.yml
@@ -51,6 +53,7 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/weather_gov.yml
 #add_executable(tests ${TEST_SOURCES})
 #target_include_directories(tests PRIVATE ${INCLUDES})
 #target_include_directories(utf8 PRIVATE ${INCLUDES})
+target_include_directories(weather_gov PRIVATE ${INCLUDES})
 
 
 

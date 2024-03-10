@@ -5,7 +5,7 @@ LOG:
   ROTATE_SIZE: 10000000
   ROTATE_FILES: 10
   JOURNAL: False
-  LOGDIR: "scriptdir"
+  LOGDIR: "./"
   LEVEL: "DEBUG"
   USE_CONSOLE: True
 
