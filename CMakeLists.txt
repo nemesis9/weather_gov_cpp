@@ -9,6 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(SOURCES
 	src/weather_gov.cpp
 	src/station.cpp
+	src/config.cpp
 	include/logger.h
 )
 
@@ -17,7 +18,7 @@ set(SOURCES
 #    src/utf8.cpp
 #)
 
-set(INCLUDES 
+set(INCLUDES
 	include
 )
 

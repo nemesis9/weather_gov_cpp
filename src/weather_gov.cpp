@@ -15,25 +15,26 @@ using json = nlohmann::json;
 #include <stdexcept>
 #include <memory>
 
+#include "config.h"
 #include "station.h"
 
 // trim from start (in place)
-inline void ltrim(std::string &s) {
-    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
-        return !std::isspace(ch);
-    }));
-}
+//inline void ltrim(std::string &s) {
+//    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
+//        return !std::isspace(ch);
+//    }));
+//}
 
 // trim from end (in place)
-inline void rtrim(std::string &s) {
-    s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
-        return !std::isspace(ch);
-    }).base(), s.end());
-}
+//inline void rtrim(std::string &s) {
+//    s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+//        return !std::isspace(ch);
+//    }).base(), s.end());
+//}
 
 loglevel_e wloglevel = logDEBUG;
 
-const std::vector<std::string> config_list = {"LOG", "HOST", "DB", "STATIONS"};
+//const std::vector<std::string> config_list = {"LOG", "HOST", "DB", "STATIONS"};
 
 class weather_gov
 {
@@ -46,36 +47,6 @@ public:
 };
 
 
-std::shared_ptr<std::map<std::string, std::string>>
-get_api_urls(YAML::Node config) {
-    std::shared_ptr<std::map<std::string, std::string>> api_urls(new std::map<std::string, std::string>);
-    std::string base_url;
-    std::string stations_url;
-    try {
-        for(YAML::const_iterator it=config["HOST"].begin();it!=config["HOST"].end();++it) {
-            std::cout << "HOST Key: " << it->first.as<std::string>() << " HOST Value: " << it->second.as<std::string>() << "\n" << std::flush;
-            std::string key = it->first.as<std::string>();
-            std::string value = it->second.as<std::string>();
-            if (key  == "BASE_URL") {
-                base_url = value;
-                wlog(logINFO) << "base_url: "  << base_url << "\n";
-            } else  if (key == "STATIONS_URL") {
-                  stations_url = value;
-                  wlog(logINFO) << "stations_url: "  << stations_url << "\n";
-            } else {
-                wlog(logERROR) << "Could not find API urls in config" << "\n";
-                throw std::runtime_error("Could not find API urls in config");
-            }
-        }
-    } catch (json::exception e) {
-          wlog(logERROR) << "Exception parsing HOST apis";
-          throw;
-    }
-    (*api_urls)["BASE_URL"] = base_url;
-    (*api_urls)["STATIONS_URL"] = stations_url;
-    return api_urls;
-}
-
 
 int
 main(int argc, char** argv) {
@@ -84,16 +55,18 @@ main(int argc, char** argv) {
     wlog(logWARNING) << "Weather_gov is under construction";
     wlog(logERROR) << "Weather_gov may produce errors";
 
-    YAML::Node config = YAML::LoadFile("./weather_gov.yml");
-    assert(config.Type() == YAML::NodeType::Map);
+    YAML::Node _config = YAML::LoadFile("./weather_gov.yml");
+    assert(_config.Type() == YAML::NodeType::Map);
+    std::cout << "config: " << _config << "\n\n";
 
-    std::cout << "config: " << config << "\n\n";
+    Config config = Config(_config);
+
     std::string base_url;
     std::string stations_url;
     std::shared_ptr<std::map<std::string, std::string>> api_urls;
 
     try {
-        api_urls = get_api_urls(config);
+        api_urls = config.get_api_urls();
         base_url = (*api_urls)["BASE_URL"];
         wlog(logINFO) << "base_url: "  << base_url;
         stations_url = (*api_urls)["BASE_URL"];
@@ -106,15 +79,13 @@ main(int argc, char** argv) {
 
 
     std::vector<Station> station_list;
-    for(const std::string& key : config_list) {
-        std::cout << "key = " << key << std::endl;
-
-        if (config[key] && key == "STATIONS") {
-            wlog(logINFO) << "Processing stations\n";
-            for(YAML::const_iterator it=config[key].begin();it!=config[key].end();++it) {
-                std::cout << "Key: " << it->first.as<std::string>() << " Value: " << it->second.as<std::string>() << "\n" << std::flush;
-                station_list.push_back(Station(it->second.as<std::string>(), stations_url));
-            }
-        }
-    }
+    std::shared_ptr<std::map<std::string, std::string>> station_map = config.get_station_map();
+    for (auto const& station : (*station_map))
+    {
+        std::cout << station.first  // string (key)
+              << ':' 
+              << station.second // string's value 
+              << std::endl;
+              station_list.push_back(Station(station.second, stations_url));
+    }   
 }
