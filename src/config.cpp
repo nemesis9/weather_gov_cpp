@@ -21,7 +21,7 @@ Config::get_api_urls()
     std::string stations_url;
     try {
         for(YAML::const_iterator it=m_config["HOST"].begin();it!=m_config["HOST"].end();++it) {
-            std::cout << "HOST Key: " << it->first.as<std::string>() << " HOST Value: " << it->second.as<std::string>() << "\n" << std::flush;
+            wlog(logINFO) << "HOST Key: " << it->first.as<std::string>() << " HOST Value: " << it->second.as<std::string>();
             std::string key = it->first.as<std::string>();
             std::string value = it->second.as<std::string>();
             if (key  == "BASE_URL") {
@@ -35,7 +35,7 @@ Config::get_api_urls()
                 throw std::runtime_error("Could not find API urls in config");
             }
         }
-    } catch (json::exception e) {
+    } catch (const json::exception &e) {
           wlog(logERROR) << "Exception parsing HOST apis";
           throw;
     }
@@ -50,7 +50,7 @@ std::shared_ptr<std::map<std::string, std::string>>
 Config::get_station_map() {
     std::shared_ptr<std::map<std::string, std::string>> station_map(new std::map<std::string, std::string>);
     for(const std::string& key : config_list) {
-        std::cout << "key = " << key << std::endl;
+        wlog(logINFO) << "key = " << key;
 
         if (m_config[key] && key == "STATIONS") {
             wlog(logINFO) << "Processing stations\n";
@@ -61,4 +61,22 @@ Config::get_station_map() {
         }
     }
     return station_map;
+}
+
+std::shared_ptr<std::map<std::string, std::string>>
+Config::get_db_config() {
+    std::shared_ptr<std::map<std::string, std::string>> db_config(new std::map<std::string, std::string>);
+    for(const std::string& key : config_list) {
+        wlog(logINFO) << "key = " << key;
+
+        if (m_config[key] && key == "DB") {
+            wlog(logINFO) << "Processing db config\n";
+            for(YAML::const_iterator it=m_config[key].begin();it!=m_config[key].end();++it) {
+                wlog(logINFO) << "Key: " << it->first.as<std::string>() << " Value: " << it->second.as<std::string>();
+                (*db_config)[it->first.as<std::string>()] = it->second.as<std::string>();
+            }
+        }
+    }
+    return db_config;
+
 }

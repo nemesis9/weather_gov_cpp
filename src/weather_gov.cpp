@@ -17,6 +17,7 @@ using json = nlohmann::json;
 
 #include "config.h"
 #include "station.h"
+#include "db.h"
 
 // trim from start (in place)
 //inline void ltrim(std::string &s) {
@@ -50,14 +51,13 @@ public:
 
 int
 main(int argc, char** argv) {
-    std::cout << "weather_gov main\n";
     wlog(logINFO) << "Welcome to Weather_gov";
     wlog(logWARNING) << "Weather_gov is under construction";
     wlog(logERROR) << "Weather_gov may produce errors";
 
     YAML::Node _config = YAML::LoadFile("./weather_gov.yml");
     assert(_config.Type() == YAML::NodeType::Map);
-    std::cout << "config: " << _config << "\n\n";
+    wlog(logINFO) << "config: " << _config << "\n\n";
 
     Config config = Config(_config);
 
@@ -82,10 +82,24 @@ main(int argc, char** argv) {
     std::shared_ptr<std::map<std::string, std::string>> station_map = config.get_station_map();
     for (auto const& station : (*station_map))
     {
-        std::cout << station.first  // string (key)
-              << ':' 
-              << station.second // string's value 
-              << std::endl;
-              station_list.push_back(Station(station.second, stations_url));
+        //std::cout << station.first  // string (key)
+        //      << ':' 
+        //      << station.second // string's value 
+        //      << std::endl;
+        wlog(logINFO) << "Station name: " << station.first << " ID: " << station.second;
+        station_list.push_back(Station(station.second, stations_url));
     }   
+
+    //std::map<std::string, std::string> db_config;
+    std::shared_ptr<std::map<std::string, std::string>> db_config = config.get_db_config();
+    //for (auto const& db_item : (*db_config))
+    //{
+    //    std::cout << db_item.first  // string (key)
+    //          << ':' 
+    //          << db_item.second // string's value 
+    //          << std::endl;
+    //} 
+
+    Db db = Db(db_config);
+
 }

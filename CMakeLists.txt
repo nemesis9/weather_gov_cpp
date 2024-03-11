@@ -5,11 +5,17 @@ project(weather_gov VERSION "0.1.0" LANGUAGES "CXX")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+link_directories(/usr/local/lib64/mariadb)
+
+set(CMAKE_CXX_FLAGS "-g -O2 -Wall")
+set (CMAKE_SHARED_LINKER_FLAGS "-I/usr/local/lib64/mariadb -lmariadbcpp")
+
 
 set(SOURCES
 	src/weather_gov.cpp
 	src/station.cpp
 	src/config.cpp
+	src/db.cpp
 	include/logger.h
 )
 
@@ -23,6 +29,7 @@ set(INCLUDES
 )
 
 add_executable(weather_gov ${SOURCES})
+target_link_libraries(weather_gov PUBLIC mariadbcpp)
 
 include(FetchContent)
 FetchContent_Declare(
@@ -55,12 +62,5 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/weather_gov.yml
 #target_include_directories(tests PRIVATE ${INCLUDES})
 #target_include_directories(utf8 PRIVATE ${INCLUDES})
 target_include_directories(weather_gov PRIVATE ${INCLUDES})
-
-
-
-
-
-
-
 
 

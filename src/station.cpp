@@ -7,9 +7,10 @@
 
 extern loglevel_e wloglevel;
 
-Station::Station(const std::string stationIdentifier, const std::string stations_url) : m_station_json_valid(false),
+Station::Station(const std::string stationIdentifier, const std::string stations_url) : 
                         m_stationIdentifier(stationIdentifier),
-                        m_stations_url(stations_url)
+                        m_stations_url(stations_url),
+                        m_station_json_valid(false)
 {
     wlog(logINFO) << "Station constructor: identifier: " << stationIdentifier << "\n";
     m_station_url = m_stations_url + "/stations/" + m_stationIdentifier;
@@ -40,7 +41,7 @@ Station::get_station_json_data() {
 
     try {
         json Doc{json::parse(str)};
-        std::cout << Doc << "\n";
+        wlog(logINFO) << "JSON Doc: " << Doc;
         std::string name = std::string(Doc[0]["properties"]["name"]);
         wlog(logINFO) << "Name: <" << name << ">";
         wlog(logINFO) << "Coords " << Doc[0]["geometry"]["coordinates"];
@@ -56,7 +57,7 @@ Station::get_station_json_data() {
         wlog(logINFO) << "Elevation (m): " << m_elevation_meters << "\n";
         wlog(logINFO) << "Elevation (ft): " << m_elevation_feet << "\n";
 
-    } catch (json::exception e) {
+    } catch (const json::exception &e) {
         wlog(logERROR) << "Exception parsing json: " << e.what() << "\n";
         m_station_json_valid = false;
         m_station_json_data = {};

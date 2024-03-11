@@ -1,7 +1,8 @@
 
 #ifndef _WLOGGER_HPP_
 #define _WLOGGER_HPP_
-
+#include <chrono>
+#include <format>
 #include <iostream>
 #include <sstream>
 #include <map>
@@ -38,7 +39,9 @@ public:
     //}
 
     logIt(loglevel_e _loglevel = logERROR) {
-        _buffer << wloglevel_strings[_loglevel] << ": ";
+        const auto now = std::chrono::system_clock::now();
+        //std::cout << std::format("{:%FT%TZ}", now) << '\n';
+        _buffer << std::format("{:%FT%TZ}", now)  << " " << wloglevel_strings[_loglevel] << ": ";
     }
 
     template <typename T>

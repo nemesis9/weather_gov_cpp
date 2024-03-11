@@ -22,6 +22,9 @@ public:
     std::shared_ptr<std::map<std::string, std::string>>
         get_station_map();
 
+    std::shared_ptr<std::map<std::string, std::string>>
+        get_db_config();
+
 private:
     YAML::Node m_config;
 
