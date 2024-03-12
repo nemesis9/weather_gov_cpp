@@ -102,4 +102,23 @@ main(int argc, char** argv) {
 
     Db db = Db(db_config);
 
+    for (auto s: station_list) {
+        std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> station_record = s.get_record();
+        std::string call_id = std::get<std::string>((*station_record)["call_id"]);
+        wlog(logINFO) << "call_id: " << call_id;
+        std::string name = std::get<std::string>((*station_record)["name"]);
+        wlog(logINFO) << "name: " << name;
+        float latitude = std::get<float>((*station_record)["latitude_deg"]);
+        wlog(logINFO) << "latitude: " << latitude;
+        float longitude = std::get<float>((*station_record)["longitude_deg"]);
+        wlog(logINFO) << "longitude: " << longitude;
+        float elevation = std::get<float>((*station_record)["elevation_m"]);
+        wlog(logINFO) << "elevation: " << elevation;
+        std::string url = std::get<std::string>((*station_record)["url"]);
+        wlog(logINFO) << "url: " << url;
+
+        db.put_station_record(station_record);
+    }
+
+
 }

@@ -23,7 +23,7 @@ public:
     Station(const std::string stationIdentifier, std::string stations_url);
     //Station(const Station&);
     //Station& operator=(const Station&) = delete;
-
+    std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> get_record();
 
 private:
     std::string m_stationIdentifier;
@@ -32,6 +32,7 @@ private:
     std::string m_station_url;
     std::array<std::string, 1> m_station_json_data;
 
+    std::string m_name;
     double m_longitude;
     double m_latitude;
     double m_elevation_meters;
@@ -39,6 +40,7 @@ private:
 
     void get_station_json_data();
     void get_station_coordinates();
+
 };
 
 #endif

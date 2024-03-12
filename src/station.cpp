@@ -7,7 +7,7 @@
 
 extern loglevel_e wloglevel;
 
-Station::Station(const std::string stationIdentifier, const std::string stations_url) : 
+Station::Station(const std::string stationIdentifier, const std::string stations_url) :
                         m_stationIdentifier(stationIdentifier),
                         m_stations_url(stations_url),
                         m_station_json_valid(false)
@@ -18,6 +18,23 @@ Station::Station(const std::string stationIdentifier, const std::string stations
     wlog(logINFO) << "Station created with url: " << m_station_url;
     get_station_json_data();
     //get_station_coordinates();
+}
+
+
+
+std::shared_ptr<std::map<std::string, std::variant<std::string, float>>>
+Station::get_record() {
+    std::shared_ptr<std::map<std::string, std::variant<std::string, float>>>
+        station_record(new std::map<std::string, std::variant<std::string, float>>);
+
+    (*station_record)["call_id"] = m_stationIdentifier;
+    (*station_record)["name"] = m_name;
+    (*station_record)["latitude_deg"] = float(m_latitude);
+    (*station_record)["longitude_deg"] = float(m_longitude);
+    (*station_record)["elevation_m"] = float(m_elevation_meters);
+    (*station_record)["url"] = m_station_url;
+
+    return station_record;
 }
 
 void
@@ -42,8 +59,8 @@ Station::get_station_json_data() {
     try {
         json Doc{json::parse(str)};
         wlog(logINFO) << "JSON Doc: " << Doc;
-        std::string name = std::string(Doc[0]["properties"]["name"]);
-        wlog(logINFO) << "Name: <" << name << ">";
+        m_name = std::string(Doc[0]["properties"]["name"]);
+        wlog(logINFO) << "Name: <" << m_name << ">";
         wlog(logINFO) << "Coords " << Doc[0]["geometry"]["coordinates"];
         std::array<double, 2> coords = std::array<double, 2>(Doc[0]["geometry"]["coordinates"]);
 
