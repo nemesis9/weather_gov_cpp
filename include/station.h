@@ -24,7 +24,8 @@ public:
     //Station(const Station&);
     //Station& operator=(const Station&) = delete;
     std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> get_record();
-    std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> get_latest_observation();
+    //std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> get_latest_observation();
+    bool get_latest_observation(std::shared_ptr<std::map<std::string, std::variant<std::string, float>>>&);
 
 private:
     std::string m_stationIdentifier;

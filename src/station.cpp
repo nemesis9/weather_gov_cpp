@@ -85,11 +85,12 @@ Station::get_record() {
 
 
 
-std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> 
-Station::get_latest_observation() {
+//std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> 
+bool
+Station::get_latest_observation(std::shared_ptr<std::map<std::string, std::variant<std::string, float>>>& obs_map) {
     
-    std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs_map( 
-        new std::map<std::string, std::variant<std::string, float>>);
+    //std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs_map( 
+    //    new std::map<std::string, std::variant<std::string, float>>);
     cpr::Response r = cpr::Get(cpr::Url{m_observation_url});
     wlog(logINFO) << "Status code: " << r.status_code << "\n";                  // 200
     wlog(logINFO) << "header: " << r.header["content-type"] << "\n";       // application/json; charset=utf-8
@@ -97,7 +98,7 @@ Station::get_latest_observation() {
                                                                          //
     if (r.status_code != 200) {
         wlog(logERROR) << "ERROR getting station observation. Return code: " << r.status_code;
-        return nullptr;
+        return false;
     }
 
     std::string resp = r.text;
@@ -118,9 +119,10 @@ Station::get_latest_observation() {
 
     } catch (const json::exception& e) {
         wlog(logERROR) << "Exception parsing obs json: " << e.what();
-        return nullptr;
+        return false;
     }
-    return obs_map;
+    //return obs_map;
+    return true;
 }
 
 

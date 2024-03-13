@@ -112,9 +112,12 @@ main(int argc, char** argv) {
 
 
     while (true) {
-        std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs;
+        //std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs;
+
+        std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs( 
+            new std::map<std::string, std::variant<std::string, float>>);
         for (auto s: station_list) {
-            obs = s.get_latest_observation();
+            s.get_latest_observation(obs);
             for (auto item: (*obs)) {
                 wlog(logINFO) << "weather_gov: obs item: Key:" << item.first;
                 if ((item.first == "station_id") || (item.first == "description") ||
