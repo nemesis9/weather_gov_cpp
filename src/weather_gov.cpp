@@ -14,6 +14,8 @@ using json = nlohmann::json;
 #include <vector>
 #include <stdexcept>
 #include <memory>
+#include <chrono>
+#include <thread>
 
 #include "config.h"
 #include "station.h"
@@ -82,23 +84,11 @@ main(int argc, char** argv) {
     std::shared_ptr<std::map<std::string, std::string>> station_map = config.get_station_map();
     for (auto const& station : (*station_map))
     {
-        //std::cout << station.first  // string (key)
-        //      << ':' 
-        //      << station.second // string's value 
-        //      << std::endl;
-        wlog(logINFO) << "Station name: " << station.first << " ID: " << station.second;
+        wlog(logINFO) << "Creating station:  name: " << station.first << " ID: " << station.second;
         station_list.push_back(Station(station.second, stations_url));
-    }   
+    }
 
-    //std::map<std::string, std::string> db_config;
     std::shared_ptr<std::map<std::string, std::string>> db_config = config.get_db_config();
-    //for (auto const& db_item : (*db_config))
-    //{
-    //    std::cout << db_item.first  // string (key)
-    //          << ':' 
-    //          << db_item.second // string's value 
-    //          << std::endl;
-    //} 
 
     Db db = Db(db_config);
 
@@ -121,4 +111,34 @@ main(int argc, char** argv) {
     }
 
 
+    while (true) {
+        std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs;
+        for (auto s: station_list) {
+            obs = s.get_latest_observation();
+            for (auto item: (*obs)) {
+                wlog(logINFO) << "weather_gov: obs item: Key:" << item.first;
+                if ((item.first == "station_id") || (item.first == "description") ||
+                     (item.first == "timestamp_UTC")) {
+                    wlog(logINFO) << "weather_gov: obs       Value: " << std::get<std::string>(item.second);
+                } else {
+                    wlog(logINFO) << "weather_gov: obs       Value: " << std::get<float>(item.second);
+                }
+            }
+            std::tuple<bool, std::string> ret = db.put_observation(obs);
+            if (std::get<0>(ret) == false) {
+                std::string res = std::get<1>(ret);
+                 if (res.find("Duplicate") != std::string::npos) {
+                     wlog(logINFO) << "weather_gov igoring duplicate record";
+                 }
+            }
+        }
+
+        if (obs.unique()) {
+            wlog(logINFO) << "obs ptr is unique, resetting";
+            obs.reset();
+        } else {
+            wlog(logINFO) << "obs ptr is NOT unique";
+        }
+        std::this_thread::sleep_for(std::chrono::seconds(10));
+    }
 }

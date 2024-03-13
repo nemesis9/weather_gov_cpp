@@ -67,14 +67,16 @@ Db::Db(std::shared_ptr<std::map<std::string, std::string>> db_config) : m_db_con
 bool
 Db::ensure_tables() {
 
+    sql::Statement *stmt = nullptr;
+    sql::Connection *conn = nullptr;
     try {
         wlog(logINFO) << "ensure tables: establishing connection";
-        sql::Statement *stmt;
+        //sql::Statement *stmt;
         sql::Driver* driver = sql::mariadb::get_driver_instance();
         std::string connect_info = "jdbc:mariadb://" + m_host + ":3306/" + m_database;
         sql::SQLString url(connect_info);
         sql::Properties properties({{"user", "weather_user"}, {"password", "weather_pass"}});
-        sql::Connection *conn = driver->connect(url, properties);
+        conn = driver->connect(url, properties);
         wlog(logINFO) << "ensure tables: connection established";
 
         stmt = conn->createStatement();
@@ -83,11 +85,13 @@ Db::ensure_tables() {
 
         stmt->execute("CREATE TABLE IF NOT EXISTS observation_cpp (station_id VARCHAR(20), timestamp_UTC VARCHAR(40), temperature_C FLOAT, temperature_F FLOAT, dewpoint_C FLOAT, dewpoint_F FLOAT, description VARCHAR(40), wind_dir VARCHAR(10), wind_spd_km_h FLOAT, wind_spd_mi_h FLOAT, wind_gust_km_h FLOAT, wind_gust_mi_h FLOAT, baro_pres_pa FLOAT, baro_pres_inHg FLOAT, rel_humidity FLOAT, PRIMARY KEY (station_id, timestamp_UTC))");
 
-        delete conn;
         delete stmt;
+        delete conn;
         return true;
     } catch (sql::SQLException& e) {
-         wlog(logERROR) << "Exception ensuring table" << e.what();
+        if (stmt) delete stmt;
+        if (conn) delete conn;
+        wlog(logERROR) << "Exception ensuring table" << e.what();
         return false;
     }
 
@@ -129,6 +133,60 @@ bool Db::put_station_record(std::shared_ptr<std::map<std::string, std::variant<s
     return true;
 }
 
+
+std::tuple<bool, std::string>
+Db::put_observation (std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs) {
+    wlog(logINFO) << "put station observation: ";
+
+    sql::Connection *conn = nullptr;
+    sql::PreparedStatement *prep_stmt = nullptr;
+    try {
+        wlog(logINFO) << "put station observation: establishing connection";
+        //sql::Statement *stmt;
+        sql::Driver* driver = sql::mariadb::get_driver_instance();
+        std::string connect_info = "jdbc:mariadb://" + m_host + ":3306/" + m_database;
+        sql::SQLString url(connect_info);
+        sql::Properties properties({{"user", "weather_user"}, {"password", "weather_pass"}});
+        //sql::Connection *conn = driver->connect(url, properties);
+        conn = driver->connect(url, properties);
+        wlog(logINFO) << "put station observation: connection established";
+
+        sql::PreparedStatement  *prep_stmt;
+        prep_stmt = conn->prepareStatement("INSERT INTO observation_cpp (station_id,"
+            "timestamp_UTC, temperature_C, temperature_F, dewpoint_C,"
+            "dewpoint_F, description, wind_dir, wind_spd_km_h, wind_spd_mi_h,"
+            "wind_gust_km_h, wind_gust_mi_h, baro_pres_pa, baro_pres_inHg,"
+            "rel_humidity) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+        prep_stmt->setString(1, std::get<std::string>((*obs)["station_id"]));
+        prep_stmt->setString(2, std::get<std::string>((*obs)["timestamp_UTC"]));
+        prep_stmt->setFloat(3, std::get<float>((*obs)["temperature_C"]));
+        prep_stmt->setFloat(4, std::get<float>((*obs)["temperature_F"]));
+        prep_stmt->setFloat(5, std::get<float>((*obs)["dewpoint_C"]));
+        prep_stmt->setFloat(6, std::get<float>((*obs)["dewpoint_F"]));
+        prep_stmt->setString(7, std::get<std::string>((*obs)["description"]));
+        prep_stmt->setFloat(8, std::get<float>((*obs)["wind_dir"]));
+        prep_stmt->setFloat(9, std::get<float>((*obs)["wind_spd_km_h"]));
+        prep_stmt->setFloat(10, std::get<float>((*obs)["wind_spd_mi_h"]));
+        prep_stmt->setFloat(11, std::get<float>((*obs)["wind_gust_km_h"]));
+        prep_stmt->setFloat(12, std::get<float>((*obs)["wind_gust_mi_h"]));
+        prep_stmt->setFloat(13, std::get<float>((*obs)["baro_pres_pa"]));
+        prep_stmt->setFloat(14, std::get<float>((*obs)["baro_pres_inHg"]));
+        prep_stmt->setFloat(15, std::get<float>((*obs)["rel_humidity"]));
+
+        prep_stmt->execute();
+        delete prep_stmt;
+        delete conn;
+
+    } catch (sql::SQLException& e) {
+        if (prep_stmt) delete conn;
+        if (conn) delete conn;
+        wlog(logERROR) << "Exception inserting observation: " << e.what();
+        return {false, std::string(e.what())};
+    }
+
+    return {true, ""};
+}
 
 
 /*
