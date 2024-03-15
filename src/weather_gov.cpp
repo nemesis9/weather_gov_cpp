@@ -72,10 +72,10 @@ main(int argc, char** argv) {
         db.put_station_record(station_record);
     }
 
-    bool loop = false;
+    bool loop = true;
+    std::map<std::string, std::variant<std::string, float>> obs; 
     while (true) {
 
-        std::map<std::string, std::variant<std::string, float>> obs; 
         for (auto s: station_list) {
             s.get_latest_observation(obs);
             for (auto item: obs) {
