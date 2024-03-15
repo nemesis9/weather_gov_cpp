@@ -12,7 +12,7 @@ class Db
 public:
     Db(std::shared_ptr<std::map<std::string, std::string>> db_config);
 
-    bool put_station_record (std::shared_ptr<std::map<std::string, std::variant<std::string, float>>>);
+    bool put_station_record (std::map<std::string, std::variant<std::string, float>>*);
 
     std::tuple<bool, std::string>
     put_observation (std::shared_ptr<std::map<std::string, std::variant<std::string, float>>>);

@@ -65,10 +65,16 @@ main(int argc, char** argv) {
 
     std::string base_url;
     std::string stations_url;
-    std::shared_ptr<std::map<std::string, std::string>> api_urls;
+    //std::shared_ptr<std::map<std::string, std::string>> api_urls;
+    //std::shared_ptr<std::map<std::string, std::string>> api_urls(new std::map<std::string, std::string>);
+    std::map<std::string, std::string>* api_urls(new (std::nothrow) std::map<std::string, std::string>);
+    if (!api_urls) {
+        wlog(logERROR) << "Could not allocate memory to get api_urls";
+        return -1;
+    }
 
     try {
-        api_urls = config.get_api_urls();
+        bool ret = config.get_api_urls(api_urls);
         base_url = (*api_urls)["BASE_URL"];
         wlog(logINFO) << "base_url: "  << base_url;
         stations_url = (*api_urls)["BASE_URL"];
@@ -78,7 +84,7 @@ main(int argc, char** argv) {
         wlog(logERROR) << "Exception getting API urls";
         return -1;
     }
-
+    delete api_urls;
 
     std::vector<Station> station_list;
     std::shared_ptr<std::map<std::string, std::string>> station_map = config.get_station_map();
@@ -93,24 +99,26 @@ main(int argc, char** argv) {
     Db db = Db(db_config);
 
     for (auto s: station_list) {
-        std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> station_record = s.get_record();
+        std::map<std::string, std::variant<std::string, float>>* station_record = 
+            new std::map<std::string, std::variant<std::string, float>>;
+        s.get_station_record(station_record);
         std::string call_id = std::get<std::string>((*station_record)["call_id"]);
-        wlog(logINFO) << "call_id: " << call_id;
+        wlog(logDEBUG) << "call_id: " << call_id;
         std::string name = std::get<std::string>((*station_record)["name"]);
-        wlog(logINFO) << "name: " << name;
+        wlog(logDEBUG) << "name: " << name;
         float latitude = std::get<float>((*station_record)["latitude_deg"]);
-        wlog(logINFO) << "latitude: " << latitude;
+        wlog(logDEBUG) << "latitude: " << latitude;
         float longitude = std::get<float>((*station_record)["longitude_deg"]);
-        wlog(logINFO) << "longitude: " << longitude;
+        wlog(logDEBUG) << "longitude: " << longitude;
         float elevation = std::get<float>((*station_record)["elevation_m"]);
-        wlog(logINFO) << "elevation: " << elevation;
+        wlog(logDEBUG) << "elevation: " << elevation;
         std::string url = std::get<std::string>((*station_record)["url"]);
-        wlog(logINFO) << "url: " << url;
+        wlog(logDEBUG) << "url: " << url;
 
         db.put_station_record(station_record);
     }
 
-
+    bool loop = false;
     while (true) {
         //std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs;
 
@@ -142,6 +150,8 @@ main(int argc, char** argv) {
         } else {
             wlog(logINFO) << "obs ptr is NOT unique";
         }
+        if (false == loop) break;
         std::this_thread::sleep_for(std::chrono::seconds(10));
+        
     }
 }

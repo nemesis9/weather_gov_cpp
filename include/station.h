@@ -23,7 +23,7 @@ public:
     Station(const std::string stationIdentifier, std::string stations_url);
     //Station(const Station&);
     //Station& operator=(const Station&) = delete;
-    std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> get_record();
+    bool get_station_record(std::map<std::string, std::variant<std::string, float>>*);
     //std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> get_latest_observation();
     bool get_latest_observation(std::shared_ptr<std::map<std::string, std::variant<std::string, float>>>&);
 

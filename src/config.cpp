@@ -13,10 +13,11 @@ Config::Config(YAML::Node config): m_config(config)
 
 
 
-std::shared_ptr<std::map<std::string, std::string>>
-Config::get_api_urls()
+//std::shared_ptr<std::map<std::string, std::string>>
+bool
+Config::get_api_urls(std::map<std::string, std::string>* api_urls)
 {
-    std::shared_ptr<std::map<std::string, std::string>> api_urls(new std::map<std::string, std::string>);
+    //std::shared_ptr<std::map<std::string, std::string>> api_urls(new std::map<std::string, std::string>);
     std::string base_url;
     std::string stations_url;
     try {

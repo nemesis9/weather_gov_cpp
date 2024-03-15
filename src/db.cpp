@@ -8,10 +8,6 @@ Db::Db(std::shared_ptr<std::map<std::string, std::string>> db_config) : m_db_con
     wlog(logINFO) << "Db constructor";
     for (auto const& db_item : (*db_config))
     {
-        //std::cout << db_item.first  // string (key)
-        //      << ':'
-        //      << db_item.second // string's value
-        //      << std::endl;
         wlog(logINFO) << "Key: " << db_item.first << " Value: " << db_item.second;
         if (db_item.first == "host") {
             m_host = db_item.second;
@@ -33,35 +29,6 @@ Db::Db(std::shared_ptr<std::map<std::string, std::string>> db_config) : m_db_con
     ensure_tables();
 }
 
-
-//bool
-//Db::get_connection() {
-//    wlog(logINFO) << "Db:ensure database";
-//    sql::Statement *stmt;
-//    try {
-//        sql::Driver* driver = sql::mariadb::get_driver_instance();
-//
-//        wlog(logINFO) << "Db:ensure database: configuring connection";
-//        // Configure connection
-//        std::string connect_info = "jdbc:mariadb://" + m_host + ":3306/" + m_database;
-//        sql::SQLString url(connect_info);
-//        sql::Properties properties({{"user", "weather_user"}, {"password", "weather_pass"}});
-//
-//        wlog(logINFO) << "Db:ensure database: establishing connection";
-//        //Establish connection
-//        //std::unique_ptr<sql::Connection> m_conn(driver->connect(url, properties));
-//        m_conn = driver->connect(url, properties);
-//        stmt = m_conn->createStatement();
-//        stmt->execute("SELECT * from station");
-//    }
-//    catch(sql::SQLException& e){
-//      std::cerr << "Error selecting from station table: " << e.what() << std::endl;
-//      wlog(logERROR) << "Error selecting from station table: " << e.what();
-//      return false;
-//   }
-//
-//   return true;
-//}
 
 
 bool
@@ -99,7 +66,7 @@ Db::ensure_tables() {
 
 
 
-bool Db::put_station_record(std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> station_record) {
+bool Db::put_station_record(std::map<std::string, std::variant<std::string, float>>* station_record) {
     wlog(logINFO) << "put station record: " << std::get<std::string>((*station_record)["name"]);
     try {
 

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include <memory>
+#include <map>
 #include "yaml-cpp/yaml.h"
 #include "logger.h"
 
@@ -16,8 +17,9 @@ class Config
 public:
     Config(YAML::Node config);
 
-    std::shared_ptr<std::map<std::string, std::string>>
-        get_api_urls();
+    //std::shared_ptr<std::map<std::string, std::string>>
+    bool get_api_urls(std::map<std::string, std::string>*);
+
 
     std::shared_ptr<std::map<std::string, std::string>>
         get_station_map();

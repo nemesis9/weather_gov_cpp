@@ -68,10 +68,9 @@ Station::get_station_json_data() {
 
 
 
-std::shared_ptr<std::map<std::string, std::variant<std::string, float>>>
-Station::get_record() {
-    std::shared_ptr<std::map<std::string, std::variant<std::string, float>>>
-        station_record(new std::map<std::string, std::variant<std::string, float>>);
+bool
+Station::get_station_record(std::map<std::string, std::variant<std::string, float>>* station_record
+) {
 
     (*station_record)["call_id"] = m_stationIdentifier;
     (*station_record)["name"] = m_name;
@@ -80,7 +79,7 @@ Station::get_record() {
     (*station_record)["elevation_m"] = float(m_elevation_meters);
     (*station_record)["url"] = m_station_url;
 
-    return station_record;
+    return true;
 }
 
 
@@ -89,8 +88,6 @@ Station::get_record() {
 bool
 Station::get_latest_observation(std::shared_ptr<std::map<std::string, std::variant<std::string, float>>>& obs_map) {
     
-    //std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs_map( 
-    //    new std::map<std::string, std::variant<std::string, float>>);
     cpr::Response r = cpr::Get(cpr::Url{m_observation_url});
     wlog(logINFO) << "Status code: " << r.status_code << "\n";                  // 200
     wlog(logINFO) << "header: " << r.header["content-type"] << "\n";       // application/json; charset=utf-8

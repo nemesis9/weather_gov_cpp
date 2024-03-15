@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 link_directories(/usr/local/lib64/mariadb)
 
-set(CMAKE_CXX_FLAGS "-g -O2 -Wall")
+set(CMAKE_CXX_FLAGS "-g -O0 -Wall")
 set (CMAKE_SHARED_LINKER_FLAGS "-I/usr/local/lib64/mariadb -lmariadbcpp")
 
 
