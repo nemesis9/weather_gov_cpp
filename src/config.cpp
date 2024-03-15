@@ -13,11 +13,9 @@ Config::Config(YAML::Node config): m_config(config)
 
 
 
-//std::shared_ptr<std::map<std::string, std::string>>
 bool
-Config::get_api_urls(std::map<std::string, std::string>* api_urls)
+Config::get_api_urls(std::map<std::string, std::string>& api_urls)
 {
-    //std::shared_ptr<std::map<std::string, std::string>> api_urls(new std::map<std::string, std::string>);
     std::string base_url;
     std::string stations_url;
     try {
@@ -40,16 +38,15 @@ Config::get_api_urls(std::map<std::string, std::string>* api_urls)
           wlog(logERROR) << "Exception parsing HOST apis";
           throw;
     }
-    (*api_urls)["BASE_URL"] = base_url;
-    (*api_urls)["STATIONS_URL"] = stations_url;
-    return api_urls;
+    api_urls["BASE_URL"] = base_url;
+    api_urls["STATIONS_URL"] = stations_url;
+    return true;
 
 }
 
 
-std::shared_ptr<std::map<std::string, std::string>>
-Config::get_station_map() {
-    std::shared_ptr<std::map<std::string, std::string>> station_map(new std::map<std::string, std::string>);
+bool
+Config::get_station_map(std::map<std::string, std::string>& station_map) {
     for(const std::string& key : config_list) {
         wlog(logINFO) << "key = " << key;
 
@@ -57,16 +54,15 @@ Config::get_station_map() {
             wlog(logINFO) << "Processing stations\n";
             for(YAML::const_iterator it=m_config[key].begin();it!=m_config[key].end();++it) {
                 wlog(logINFO) << "Key: " << it->first.as<std::string>() << " Value: " << it->second.as<std::string>();
-                (*station_map)[it->first.as<std::string>()] = it->second.as<std::string>();
+                station_map[it->first.as<std::string>()] = it->second.as<std::string>();
             }
         }
     }
-    return station_map;
+    return true;
 }
 
-std::shared_ptr<std::map<std::string, std::string>>
-Config::get_db_config() {
-    std::shared_ptr<std::map<std::string, std::string>> db_config(new std::map<std::string, std::string>);
+bool
+Config::get_db_config(std::map<std::string, std::string>& db_config) {
     for(const std::string& key : config_list) {
         wlog(logINFO) << "key = " << key;
 
@@ -74,10 +70,10 @@ Config::get_db_config() {
             wlog(logINFO) << "Processing db config\n";
             for(YAML::const_iterator it=m_config[key].begin();it!=m_config[key].end();++it) {
                 wlog(logINFO) << "Key: " << it->first.as<std::string>() << " Value: " << it->second.as<std::string>();
-                (*db_config)[it->first.as<std::string>()] = it->second.as<std::string>();
+                db_config[it->first.as<std::string>()] = it->second.as<std::string>();
             }
         }
     }
-    return db_config;
+    return true;
 
 }

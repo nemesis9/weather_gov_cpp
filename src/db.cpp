@@ -3,10 +3,10 @@
 
 extern loglevel_e wloglevel;
 
-Db::Db(std::shared_ptr<std::map<std::string, std::string>> db_config) : m_db_config(db_config)
+Db::Db(std::map<std::string, std::string>& db_config) : m_db_config(db_config)
 {
     wlog(logINFO) << "Db constructor";
-    for (auto const& db_item : (*db_config))
+    for (auto const& db_item : db_config)
     {
         wlog(logINFO) << "Key: " << db_item.first << " Value: " << db_item.second;
         if (db_item.first == "host") {
@@ -38,7 +38,6 @@ Db::ensure_tables() {
     sql::Connection *conn = nullptr;
     try {
         wlog(logINFO) << "ensure tables: establishing connection";
-        //sql::Statement *stmt;
         sql::Driver* driver = sql::mariadb::get_driver_instance();
         std::string connect_info = "jdbc:mariadb://" + m_host + ":3306/" + m_database;
         sql::SQLString url(connect_info);
@@ -50,7 +49,7 @@ Db::ensure_tables() {
         stmt->execute("CREATE TABLE IF NOT EXISTS station_cpp (call_id VARCHAR(5) PRIMARY KEY, name VARCHAR(80), latitude_deg FLOAT, longitude_deg FLOAT, elevation_m FLOAT,url VARCHAR(80))");
         stmt->execute("SELECT * from station_cpp");
 
-        stmt->execute("CREATE TABLE IF NOT EXISTS observation_cpp (station_id VARCHAR(20), timestamp_UTC VARCHAR(40), temperature_C FLOAT, temperature_F FLOAT, dewpoint_C FLOAT, dewpoint_F FLOAT, description VARCHAR(40), wind_dir VARCHAR(10), wind_spd_km_h FLOAT, wind_spd_mi_h FLOAT, wind_gust_km_h FLOAT, wind_gust_mi_h FLOAT, baro_pres_pa FLOAT, baro_pres_inHg FLOAT, rel_humidity FLOAT, PRIMARY KEY (station_id, timestamp_UTC))");
+        stmt->execute("CREATE TABLE IF NOT EXISTS observation_cpp (station_id VARCHAR(20), timestamp_UTC VARCHAR(40), temperature_C FLOAT, temperature_F FLOAT, dewpoint_C FLOAT, dewpoint_F FLOAT, description VARCHAR(40), wind_dir FLOAT, wind_spd_km_h FLOAT, wind_spd_mi_h FLOAT, wind_gust_km_h FLOAT, wind_gust_mi_h FLOAT, baro_pres_pa FLOAT, baro_pres_inHg FLOAT, rel_humidity FLOAT, PRIMARY KEY (station_id, timestamp_UTC))");
 
         delete stmt;
         delete conn;
@@ -66,12 +65,12 @@ Db::ensure_tables() {
 
 
 
-bool Db::put_station_record(std::map<std::string, std::variant<std::string, float>>* station_record) {
-    wlog(logINFO) << "put station record: " << std::get<std::string>((*station_record)["name"]);
+bool
+Db::put_station_record(std::map<std::string, std::variant<std::string, float>>& station_record) {
+    wlog(logINFO) << "put station record: " << std::get<std::string>(station_record["name"]);
     try {
 
         wlog(logINFO) << "put station record: establishing connection";
-        //sql::Statement *stmt;
         sql::Driver* driver = sql::mariadb::get_driver_instance();
         std::string connect_info = "jdbc:mariadb://" + m_host + ":3306/" + m_database;
         sql::SQLString url(connect_info);
@@ -82,12 +81,12 @@ bool Db::put_station_record(std::map<std::string, std::variant<std::string, floa
         sql::PreparedStatement  *prep_stmt;
         prep_stmt = conn->prepareStatement("REPLACE INTO station_cpp(call_id, name, latitude_deg, longitude_deg, elevation_m, url) VALUES (?, ?, ?, ?, ?, ?)");
 
-        prep_stmt->setString(1, std::get<std::string>((*station_record)["call_id"]));
-        prep_stmt->setString(2, std::get<std::string>((*station_record)["name"]));
-        prep_stmt->setFloat(3, std::get<float>((*station_record)["latitude_deg"]));
-        prep_stmt->setFloat(4, std::get<float>((*station_record)["longitude_deg"]));
-        prep_stmt->setFloat(5, std::get<float>((*station_record)["elevation_m"]));
-        prep_stmt->setString(6, std::get<std::string>((*station_record)["url"]));
+        prep_stmt->setString(1, std::get<std::string>(station_record["call_id"]));
+        prep_stmt->setString(2, std::get<std::string>(station_record["name"]));
+        prep_stmt->setFloat(3, std::get<float>(station_record["latitude_deg"]));
+        prep_stmt->setFloat(4, std::get<float>(station_record["longitude_deg"]));
+        prep_stmt->setFloat(5, std::get<float>(station_record["elevation_m"]));
+        prep_stmt->setString(6, std::get<std::string>(station_record["url"]));
 
         prep_stmt->execute();
         delete prep_stmt;
@@ -102,7 +101,7 @@ bool Db::put_station_record(std::map<std::string, std::variant<std::string, floa
 
 
 std::tuple<bool, std::string>
-Db::put_observation (std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs) {
+Db::put_observation (std::map<std::string, std::variant<std::string, float>>& obs) {
     wlog(logINFO) << "put station observation: ";
 
     sql::Connection *conn = nullptr;
@@ -125,21 +124,21 @@ Db::put_observation (std::shared_ptr<std::map<std::string, std::variant<std::str
             "wind_gust_km_h, wind_gust_mi_h, baro_pres_pa, baro_pres_inHg,"
             "rel_humidity) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-        prep_stmt->setString(1, std::get<std::string>((*obs)["station_id"]));
-        prep_stmt->setString(2, std::get<std::string>((*obs)["timestamp_UTC"]));
-        prep_stmt->setFloat(3, std::get<float>((*obs)["temperature_C"]));
-        prep_stmt->setFloat(4, std::get<float>((*obs)["temperature_F"]));
-        prep_stmt->setFloat(5, std::get<float>((*obs)["dewpoint_C"]));
-        prep_stmt->setFloat(6, std::get<float>((*obs)["dewpoint_F"]));
-        prep_stmt->setString(7, std::get<std::string>((*obs)["description"]));
-        prep_stmt->setFloat(8, std::get<float>((*obs)["wind_dir"]));
-        prep_stmt->setFloat(9, std::get<float>((*obs)["wind_spd_km_h"]));
-        prep_stmt->setFloat(10, std::get<float>((*obs)["wind_spd_mi_h"]));
-        prep_stmt->setFloat(11, std::get<float>((*obs)["wind_gust_km_h"]));
-        prep_stmt->setFloat(12, std::get<float>((*obs)["wind_gust_mi_h"]));
-        prep_stmt->setFloat(13, std::get<float>((*obs)["baro_pres_pa"]));
-        prep_stmt->setFloat(14, std::get<float>((*obs)["baro_pres_inHg"]));
-        prep_stmt->setFloat(15, std::get<float>((*obs)["rel_humidity"]));
+        prep_stmt->setString(1, std::get<std::string>(obs["station_id"]));
+        prep_stmt->setString(2, std::get<std::string>(obs["timestamp_UTC"]));
+        prep_stmt->setFloat(3, std::get<float>(obs["temperature_C"]));
+        prep_stmt->setFloat(4, std::get<float>(obs["temperature_F"]));
+        prep_stmt->setFloat(5, std::get<float>(obs["dewpoint_C"]));
+        prep_stmt->setFloat(6, std::get<float>(obs["dewpoint_F"]));
+        prep_stmt->setString(7, std::get<std::string>(obs["description"]));
+        prep_stmt->setFloat(8, std::get<float>(obs["wind_dir"]));
+        prep_stmt->setFloat(9, std::get<float>(obs["wind_spd_km_h"]));
+        prep_stmt->setFloat(10, std::get<float>(obs["wind_spd_mi_h"]));
+        prep_stmt->setFloat(11, std::get<float>(obs["wind_gust_km_h"]));
+        prep_stmt->setFloat(12, std::get<float>(obs["wind_gust_mi_h"]));
+        prep_stmt->setFloat(13, std::get<float>(obs["baro_pres_pa"]));
+        prep_stmt->setFloat(14, std::get<float>(obs["baro_pres_inHg"]));
+        prep_stmt->setFloat(15, std::get<float>(obs["rel_humidity"]));
 
         prep_stmt->execute();
         delete prep_stmt;

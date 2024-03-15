@@ -21,11 +21,8 @@ class Station
 {
 public:
     Station(const std::string stationIdentifier, std::string stations_url);
-    //Station(const Station&);
-    //Station& operator=(const Station&) = delete;
-    bool get_station_record(std::map<std::string, std::variant<std::string, float>>*);
-    //std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> get_latest_observation();
-    bool get_latest_observation(std::shared_ptr<std::map<std::string, std::variant<std::string, float>>>&);
+    bool get_station_record(std::map<std::string, std::variant<std::string, float>>&);
+    bool get_latest_observation(std::map<std::string, std::variant<std::string, float>>&);
 
 private:
     std::string m_stationIdentifier;
@@ -42,18 +39,17 @@ private:
     double m_elevation_feet;
 
     void get_station_json_data();
-    //void get_station_coordinates();
 
-    void get_station_id(json Doc,  std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs_map);
-    void get_timestamp(json Doc,  std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs_map);
-    void get_temperature(json Doc,  std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs_map);
-    void get_dewpoint(json Doc,  std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs_map);
-    void get_description(json Doc,  std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs_map);
-    void get_winddir(json Doc,  std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs_map);
-    void get_windspeed(json Doc,  std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs_map);
-    void get_windgust(json Doc,  std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs_map);
-    void get_barometric_pressure(json Doc,  std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs_map);
-    void get_rel_humidity(json Doc,  std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs_map);
+    void get_station_id(json Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map);
+    void get_timestamp(json Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map);
+    void get_temperature(json Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map);
+    void get_dewpoint(json Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map);
+    void get_description(json Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map);
+    void get_winddir(json Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map);
+    void get_windspeed(json Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map);
+    void get_windgust(json Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map);
+    void get_barometric_pressure(json Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map);
+    void get_rel_humidity(json Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map);
 
 };
 

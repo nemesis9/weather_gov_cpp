@@ -17,15 +17,11 @@ class Config
 public:
     Config(YAML::Node config);
 
-    //std::shared_ptr<std::map<std::string, std::string>>
-    bool get_api_urls(std::map<std::string, std::string>*);
+    bool get_api_urls(std::map<std::string, std::string>&);
 
+    bool get_station_map(std::map<std::string, std::string>&);
 
-    std::shared_ptr<std::map<std::string, std::string>>
-        get_station_map();
-
-    std::shared_ptr<std::map<std::string, std::string>>
-        get_db_config();
+    bool get_db_config(std::map<std::string, std::string>&);
 
 private:
     YAML::Node m_config;

@@ -69,15 +69,15 @@ Station::get_station_json_data() {
 
 
 bool
-Station::get_station_record(std::map<std::string, std::variant<std::string, float>>* station_record
+Station::get_station_record(std::map<std::string, std::variant<std::string, float>>& station_record
 ) {
 
-    (*station_record)["call_id"] = m_stationIdentifier;
-    (*station_record)["name"] = m_name;
-    (*station_record)["latitude_deg"] = float(m_latitude);
-    (*station_record)["longitude_deg"] = float(m_longitude);
-    (*station_record)["elevation_m"] = float(m_elevation_meters);
-    (*station_record)["url"] = m_station_url;
+    station_record["call_id"] = m_stationIdentifier;
+    station_record["name"] = m_name;
+    station_record["latitude_deg"] = float(m_latitude);
+    station_record["longitude_deg"] = float(m_longitude);
+    station_record["elevation_m"] = float(m_elevation_meters);
+    station_record["url"] = m_station_url;
 
     return true;
 }
@@ -86,7 +86,7 @@ Station::get_station_record(std::map<std::string, std::variant<std::string, floa
 
 //std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> 
 bool
-Station::get_latest_observation(std::shared_ptr<std::map<std::string, std::variant<std::string, float>>>& obs_map) {
+Station::get_latest_observation(std::map<std::string, std::variant<std::string, float>>& obs_map) {
     
     cpr::Response r = cpr::Get(cpr::Url{m_observation_url});
     wlog(logINFO) << "Status code: " << r.status_code << "\n";                  // 200
@@ -124,9 +124,9 @@ Station::get_latest_observation(std::shared_ptr<std::map<std::string, std::varia
 
 
 void
-Station::get_station_id(json Doc,  std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs_map) {
+Station::get_station_id(json Doc, std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
-    (*obs_map)["station_id"] = m_stationIdentifier;
+    obs_map["station_id"] = m_stationIdentifier;
     wlog(logINFO) << "Inserted station_id into obs_map: " << m_stationIdentifier;
  
     return;
@@ -134,15 +134,15 @@ Station::get_station_id(json Doc,  std::shared_ptr<std::map<std::string, std::va
 
 
 void
-Station::get_timestamp(json Doc,  std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs_map) {
+Station::get_timestamp(json Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
     try {
         std::string timestamp = std::string(Doc[0]["properties"]["timestamp"]);
         wlog(logINFO) << "Doc timestamp : " << timestamp;
-        (*obs_map)["timestamp_UTC"] = timestamp;
+        obs_map["timestamp_UTC"] = timestamp;
     } catch (const json::exception& e) {
         wlog(logERROR) << "Exception parsing obs json timestamp: " << e.what();
-        (*obs_map)["timestamp_UTC"] = "None";
+        obs_map["timestamp_UTC"] = "None";
         wlog(logWARNING) << "Doc timestamp setting to None";
     }
 
@@ -151,18 +151,18 @@ Station::get_timestamp(json Doc,  std::shared_ptr<std::map<std::string, std::var
 
 
 void
-Station::get_temperature(json Doc,  std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs_map) {
+Station::get_temperature(json Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
     try {
         float temperature = float(Doc[0]["properties"]["temperature"]["value"]);
-        (*obs_map)["temperature_C"] = float(temperature);
-        (*obs_map)["temperature_F"] = temperature * float((9.0/5.0)) + float(32.0);
+        obs_map["temperature_C"] = float(temperature);
+        obs_map["temperature_F"] = temperature * float((9.0/5.0)) + float(32.0);
         wlog(logINFO) << "Doc temperature_C : " << temperature;
         wlog(logINFO) << "Doc temperature_F : " << temperature * float((9.0/5.0)) + float(32.0);
     } catch (const json::exception& e) {
         wlog(logERROR) << "Exception parsing obs json temperature: " << e.what();
-        (*obs_map)["temperature_C"] = float(-999.99);
-        (*obs_map)["temperature_F"] = float(-999.99);
+        obs_map["temperature_C"] = float(-999.99);
+        obs_map["temperature_F"] = float(-999.99);
         wlog(logWARNING) << "Doc temperature setting null to -999.99";
     }
 
@@ -171,18 +171,18 @@ Station::get_temperature(json Doc,  std::shared_ptr<std::map<std::string, std::v
 
 
 void
-Station::get_dewpoint(json Doc,  std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs_map) {
+Station::get_dewpoint(json Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
     try {
         float dewpoint = float(Doc[0]["properties"]["dewpoint"]["value"]);
-        (*obs_map)["dewpoint_C"] = float(dewpoint);
-        (*obs_map)["dewpoint_F"] = dewpoint * float((9.0/5.0)) + float(32.0);
+        obs_map["dewpoint_C"] = float(dewpoint);
+        obs_map["dewpoint_F"] = dewpoint * float((9.0/5.0)) + float(32.0);
         wlog(logINFO) << "Doc dewpoint_C : " << dewpoint;
         wlog(logINFO) << "Doc dewpoint_F : " << dewpoint * float((9.0/5.0)) + float(32.0);
     } catch (const json::exception& e) {
         wlog(logERROR) << "Exception parsing obs json dewpoint: " << e.what();
-        (*obs_map)["dewpoint_C"] = float(-999.99);
-        (*obs_map)["dewpoint_F"] = float(-999.99);
+        obs_map["dewpoint_C"] = float(-999.99);
+        obs_map["dewpoint_F"] = float(-999.99);
         wlog(logWARNING) << "Doc dewpoint setting null to -999.99";
     }
 
@@ -191,15 +191,15 @@ Station::get_dewpoint(json Doc,  std::shared_ptr<std::map<std::string, std::vari
 
 
 void
-Station::get_description(json Doc,  std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs_map) {
+Station::get_description(json Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
     try {
         std::string description = std::string(Doc[0]["properties"]["textDescription"]);
         wlog(logINFO) << "Doc description : " << description;
-        (*obs_map)["description"] = description;
+        obs_map["description"] = description;
     } catch (const json::exception& e) {
         wlog(logERROR) << "Exception parsing obs json description: " << e.what();
-        (*obs_map)["description"] = "None";
+        obs_map["description"] = "None";
         wlog(logWARNING) << "Doc description set to None";
     }
 
@@ -208,15 +208,15 @@ Station::get_description(json Doc,  std::shared_ptr<std::map<std::string, std::v
 
 
 void
-Station::get_winddir(json Doc,  std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs_map) {
+Station::get_winddir(json Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
     try {
         float windir = float(Doc[0]["properties"]["windDirection"]["value"]);
-        (*obs_map)["wind_dir"] = float(windir);
+        obs_map["wind_dir"] = float(windir);
         wlog(logINFO) << "Doc windir : " << windir;
     } catch (const json::exception& e) {
         wlog(logERROR) << "Exception parsing obs json wind direction: " << e.what();
-        (*obs_map)["wind_dir"] = float(-999.99);
+        obs_map["wind_dir"] = float(-999.99);
         wlog(logWARNING) << "Doc winddir setting null to -999.99";
     }
 
@@ -225,19 +225,19 @@ Station::get_winddir(json Doc,  std::shared_ptr<std::map<std::string, std::varia
 
 
 void
-Station::get_windspeed(json Doc,  std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs_map) {
+Station::get_windspeed(json Doc, std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
     try {
         float windspeed = float(Doc[0]["properties"]["windSpeed"]["value"]);
-        (*obs_map)["wind_spd_km_h"] = float(windspeed);
-        (*obs_map)["wind_spd_mi_h"] = float(windspeed) * float(0.6213712);
+        obs_map["wind_spd_km_h"] = float(windspeed);
+        obs_map["wind_spd_mi_h"] = float(windspeed) * float(0.6213712);
         wlog(logINFO) << "Doc windspeed km/h : " << windspeed;
         wlog(logINFO) << "Doc windspeed mi/h : " << windspeed * float(0.6213712);
 
     } catch (const json::exception& e) {
         wlog(logERROR) << "Exception parsing obs json wind speed: " << e.what();
-        (*obs_map)["wind_spd_km_h"] = float(-999.99);
-        (*obs_map)["wind_spd_mi_h"] = float(-999.99);
+        obs_map["wind_spd_km_h"] = float(-999.99);
+        obs_map["wind_spd_mi_h"] = float(-999.99);
         wlog(logWARNING) << "Doc windspeed setting null to -999.99";
     }
 
@@ -246,19 +246,19 @@ Station::get_windspeed(json Doc,  std::shared_ptr<std::map<std::string, std::var
 
 
 void
-Station::get_windgust(json Doc,  std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs_map) {
+Station::get_windgust(json Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
     try {
         float windgust = float(Doc[0]["properties"]["windGust"]["value"]);
-        (*obs_map)["wind_gust_km_h"] = float(windgust);
-        (*obs_map)["wind_gust_mi_h"] = float(windgust) * float(0.6213712);
+        obs_map["wind_gust_km_h"] = float(windgust);
+        obs_map["wind_gust_mi_h"] = float(windgust) * float(0.6213712);
         wlog(logINFO) << "Doc windgust km/h : " << windgust;
         wlog(logINFO) << "Doc windgust mi/h : " << windgust * float(0.6213712);
 
     } catch (const json::exception& e) {
         wlog(logERROR) << "Exception parsing obs json wind gust: " << e.what();
-        (*obs_map)["wind_gust_km_h"] = float(-999.99);
-        (*obs_map)["wind_gust_mi_h"] = float(-999.99);
+        obs_map["wind_gust_km_h"] = float(-999.99);
+        obs_map["wind_gust_mi_h"] = float(-999.99);
         wlog(logWARNING) << "Doc windgust setting null to -999.99";
     }
 
@@ -267,19 +267,19 @@ Station::get_windgust(json Doc,  std::shared_ptr<std::map<std::string, std::vari
 
 
 void
-Station::get_barometric_pressure(json Doc,  std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs_map) {
+Station::get_barometric_pressure(json Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
     try {
         float baro_pres_pa = float(Doc[0]["properties"]["barometricPressure"]["value"]);
-        (*obs_map)["baro_pres_pa"] = float(baro_pres_pa);
-        (*obs_map)["baro_pres_inHg"] = float(baro_pres_pa) * float(0.00029529983071445);
+        obs_map["baro_pres_pa"] = float(baro_pres_pa);
+        obs_map["baro_pres_inHg"] = float(baro_pres_pa) * float(0.00029529983071445);
         wlog(logINFO) << "Doc baro_pres_pa km/h : " << baro_pres_pa;
         wlog(logINFO) << "Doc baro_pres_inHg : " << baro_pres_pa * float(0.00029529983071445);
 
     } catch (const json::exception& e) {
         wlog(logERROR) << "Exception parsing obs json barometricPressure: " << e.what();
-        (*obs_map)["baro_pres_pa"] = float(-999.99);
-        (*obs_map)["baro_pres_inHg"] = float(-999.99);
+        obs_map["baro_pres_pa"] = float(-999.99);
+        obs_map["baro_pres_inHg"] = float(-999.99);
         wlog(logWARNING) << "Doc barometricPressure setting null to -999.99";
     }
 
@@ -288,15 +288,15 @@ Station::get_barometric_pressure(json Doc,  std::shared_ptr<std::map<std::string
 
 
 void 
-Station::get_rel_humidity(json Doc,  std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> obs_map) {
+Station::get_rel_humidity(json Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
     try {
         float rel_humidity = float(Doc[0]["properties"]["relativeHumidity"]["value"]);
-        (*obs_map)["rel_humidity"] = float(rel_humidity);
+        obs_map["rel_humidity"] = float(rel_humidity);
         wlog(logINFO) << "Doc rel_humidity : " << rel_humidity;
     } catch (const json::exception& e) {
         wlog(logERROR) << "Exception parsing obs json rel_humidity: " << e.what();
-        (*obs_map)["rel_humidity"] = float(-999.99);
+        obs_map["rel_humidity"] = float(-999.99);
         wlog(logWARNING) << "Doc rel_humidity setting null to -999.99";
     }
 
