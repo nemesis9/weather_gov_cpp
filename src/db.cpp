@@ -3,6 +3,7 @@
 
 extern loglevel_e wloglevel;
 
+//* Db object with config
 Db::Db(std::map<std::string, std::string>& db_config) : m_db_config(db_config)
 {
     wlog(logINFO) << "Db constructor";
@@ -30,7 +31,8 @@ Db::Db(std::map<std::string, std::string>& db_config) : m_db_config(db_config)
 }
 
 
-
+//* PRIVATE
+//* make sure we have our db tables
 bool
 Db::ensure_tables() {
 
@@ -65,6 +67,8 @@ Db::ensure_tables() {
 
 
 
+//* PUBLIC
+//* put station record
 bool
 Db::put_station_record(std::map<std::string, std::variant<std::string, float>>& station_record) {
     wlog(logINFO) << "put station record: " << std::get<std::string>(station_record["name"]);
@@ -100,6 +104,8 @@ Db::put_station_record(std::map<std::string, std::variant<std::string, float>>& 
 }
 
 
+//* PUBLIC
+//* put station observation
 std::tuple<bool, std::string>
 Db::put_observation (std::map<std::string, std::variant<std::string, float>>& obs) {
     wlog(logINFO) << "put station observation: ";
@@ -155,76 +161,3 @@ Db::put_observation (std::map<std::string, std::variant<std::string, float>>& ob
 }
 
 
-/*
- *
- //try {
-    //    // Create a new Statement
-    //    std::unique_ptr<sql::Statement> stmnt(conn->createStatement());
-    //    // Execute query
-    //    sql::ResultSet *res = stmnt->executeQuery("select * from station");
-    //    // Loop through and print results
-    //    while (res->next()) {
-    //        std::cout << "call_id = " << res->getString(1);
-    //        std::cout << ", name = " << res->getString(2);
-    //        std::cout << ", latitude_deg = " << res->getFloat(3);
-    //        std::cout << ", longitude_deg = " << res->getFloat(4);
-    //        std::cout << ", elevation = " << res->getFloat(5);
-    //        std::cout << ", url = " << res->getString(6) << "\n";
-    //    }
-    //}
-
-def ensure_station_table(self) -> bool:
-    try:
-        cursor = self.db.cursor()
-        create_table_query = """
-        CREATE TABLE IF NOT EXISTS station (
-            call_id VARCHAR(5) PRIMARY KEY,
-            name VARCHAR(40),
-            latitude_deg FLOAT,
-            longitude_deg FLOAT,
-            elevation_m FLOAT,
-            url VARCHAR(80)
-        )
-        """
-        cursor.execute(create_table_query)
-        self.log.info("Table 'station' created successfully")
-        cursor.close()
-        return True
-    except Exception as e:
-        self.log.error(f"Exception creating station table: {e}")
-        cursor.close()
-        return False
-
-def ensure_observation_table(self) -> bool:
-    try:
-        cursor = self.db.cursor()
-        create_table_query = """
-        CREATE TABLE IF NOT EXISTS observation (
-            station_id VARCHAR(20),
-            timestamp_UTC VARCHAR(40),
-            temperature_C FLOAT,
-            temperature_F FLOAT,
-            dewpoint_C FLOAT,
-            dewpoint_F FLOAT,
-            description VARCHAR(40),
-            wind_dir VARCHAR(10),
-            wind_spd_km_h FLOAT,
-            wind_spd_mi_h FLOAT,
-            wind_gust_km_h FLOAT,
-            wind_gust_mi_h FLOAT,
-            baro_pres_pa FLOAT,
-            baro_pres_inHg FLOAT,
-            rel_humidity FLOAT,
-            PRIMARY KEY (station_id, timestamp_UTC)
-        );
-        """
-        cursor.execute(create_table_query)
-        self.log.info("Table 'observation' created successfully")
-        cursor.close()
-        return True
-    except Exception as e:
-        self.log.error(f"Exception creating observation table: {e}")
-        cursor.close()
-        return False
-
-*/

@@ -8,25 +8,37 @@
 #include "db.h"
 
 
+//*
+//* Set the global log level
+//*
 loglevel_e wloglevel = logDEBUG;
 
-
+//*
+//* main
+//*
 int
 main(int argc, char** argv) {
+    /* A little log test */
     wlog(logINFO) << "Welcome to Weather_gov";
     wlog(logWARNING) << "Weather_gov is under construction";
     wlog(logERROR) << "Weather_gov may produce errors";
 
+    //* See if we can load the config. Bomb if we dont get it.                
+    //* There is cmake copy target that copies the yml file
+    //*     to the build directory so it is current directory
     YAML::Node _config = YAML::LoadFile("./weather_gov.yml");
     assert(_config.Type() == YAML::NodeType::Map);
     wlog(logINFO) << "config: " << _config << "\n\n";
 
+    //* Instantiate our config object
     Config config = Config(_config);
 
+    //* Allocate objects to receive basic info
     std::string base_url;
     std::string stations_url;
     std::map<std::string, std::string> api_urls;
 
+    //* Try to get the basic data 
     try {
         config.get_api_urls(api_urls);
         base_url = api_urls["BASE_URL"];
@@ -39,6 +51,7 @@ main(int argc, char** argv) {
         return -1;
     }
 
+    //* Create a station list
     std::vector<Station> station_list;
     std::map<std::string, std::string> station_map;
     config.get_station_map(station_map);
@@ -48,11 +61,14 @@ main(int argc, char** argv) {
         station_list.push_back(Station(station.second, stations_url));
     }
 
+    //* Create a db object
     std::map<std::string, std::string> db_config;
     config.get_db_config(db_config);
 
     Db db = Db(db_config);
 
+    //* For all the stations in the config, create a db record if we don't
+    //      already have one
     for (auto s: station_list) {
         std::map<std::string, std::variant<std::string, float>> station_record;
         s.get_station_record(station_record);
@@ -72,6 +88,7 @@ main(int argc, char** argv) {
         db.put_station_record(station_record);
     }
 
+    //* loop over stations and store the latest weather observation
     bool loop = true;
     std::map<std::string, std::variant<std::string, float>> obs; 
     while (true) {
@@ -100,7 +117,8 @@ main(int argc, char** argv) {
         }
 
         if (false == loop) break;
-        std::this_thread::sleep_for(std::chrono::seconds(10));
+        //* Loop every 5 minutes (should be a config item)
+        std::this_thread::sleep_for(std::chrono::seconds(300));
         
     }
 }

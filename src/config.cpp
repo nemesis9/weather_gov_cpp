@@ -2,17 +2,15 @@
 #include "config.h"
 
 
-
+//* get the log level
 extern loglevel_e wloglevel;
 
-
+//* Config constructor, set the config
 Config::Config(YAML::Node config): m_config(config)
 {
 }
 
-
-
-
+//* Get the api_urls for accessing weather.gov
 bool
 Config::get_api_urls(std::map<std::string, std::string>& api_urls)
 {
@@ -25,7 +23,7 @@ Config::get_api_urls(std::map<std::string, std::string>& api_urls)
             std::string value = it->second.as<std::string>();
             if (key  == "BASE_URL") {
                 base_url = value;
-                wlog(logINFO) << "base_url: "  << base_url << "\n";
+                wlog(logDE) << "base_url: "  << base_url << "\n";
             } else  if (key == "STATIONS_URL") {
                   stations_url = value;
                   wlog(logINFO) << "stations_url: "  << stations_url << "\n";
@@ -45,6 +43,7 @@ Config::get_api_urls(std::map<std::string, std::string>& api_urls)
 }
 
 
+//* Get the station map (name and stationIdentifier)
 bool
 Config::get_station_map(std::map<std::string, std::string>& station_map) {
     for(const std::string& key : config_list) {
@@ -61,6 +60,8 @@ Config::get_station_map(std::map<std::string, std::string>& station_map) {
     return true;
 }
 
+
+//* Get the mariadb configuration 
 bool
 Config::get_db_config(std::map<std::string, std::string>& db_config) {
     for(const std::string& key : config_list) {

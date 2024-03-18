@@ -29,7 +29,6 @@ private:
     bool m_db_connected = false;
 
 
-    //bool get_connection();
     bool ensure_tables();
 };
 

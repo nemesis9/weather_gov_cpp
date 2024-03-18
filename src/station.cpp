@@ -7,6 +7,8 @@
 
 extern loglevel_e wloglevel;
 
+//* PUBLIC
+//* Station object needs to know the url and identifier
 Station::Station(const std::string stationIdentifier, const std::string stations_url) :
                         m_stationIdentifier(stationIdentifier),
                         m_stations_url(stations_url),
@@ -21,6 +23,66 @@ Station::Station(const std::string stationIdentifier, const std::string stations
 }
 
 
+
+//* PUBLIC
+//* Station interface to return station data
+bool
+Station::get_station_record(std::map<std::string, std::variant<std::string, float>>& station_record
+) {
+
+    station_record["call_id"] = m_stationIdentifier;
+    station_record["name"] = m_name;
+    station_record["latitude_deg"] = float(m_latitude);
+    station_record["longitude_deg"] = float(m_longitude);
+    station_record["elevation_m"] = float(m_elevation_meters);
+    station_record["url"] = m_station_url;
+
+    return true;
+}
+
+
+
+//* PUBLIC
+//* Station interface to return latest station observation data
+bool
+Station::get_latest_observation(std::map<std::string, std::variant<std::string, float>>& obs_map) {
+    
+    cpr::Response r = cpr::Get(cpr::Url{m_observation_url});
+    wlog(logINFO) << "Status code: " << r.status_code << "\n";                  // 200
+    wlog(logINFO) << "header: " << r.header["content-type"] << "\n";       // application/json; charset=utf-8
+    wlog(logINFO) << "text: " << r.text << "\n";                         // JSON text string
+                                                                         //
+    if (r.status_code != 200) {
+        wlog(logERROR) << "ERROR getting station observation. Return code: " << r.status_code;
+        return false;
+    }
+
+    std::string resp = r.text;
+    try {
+        json Doc{json::parse(resp)};
+        wlog(logINFO) << "JSON Doc: " << Doc;
+
+        get_station_id(Doc, obs_map);
+        get_timestamp(Doc, obs_map);
+        get_temperature(Doc, obs_map);
+        get_dewpoint(Doc, obs_map);
+        get_description(Doc, obs_map);
+        get_winddir(Doc, obs_map);
+        get_windspeed(Doc, obs_map);
+        get_windgust(Doc, obs_map);
+        get_barometric_pressure(Doc, obs_map);
+        get_rel_humidity(Doc, obs_map);
+
+    } catch (const json::exception& e) {
+        wlog(logERROR) << "Exception parsing obs json: " << e.what();
+        return false;
+    }
+    //return obs_map;
+    return true;
+}
+
+//* PRIVATE
+//* Station object get station data 
 void
 Station::get_station_json_data() {
 
@@ -67,62 +129,8 @@ Station::get_station_json_data() {
 }
 
 
-
-bool
-Station::get_station_record(std::map<std::string, std::variant<std::string, float>>& station_record
-) {
-
-    station_record["call_id"] = m_stationIdentifier;
-    station_record["name"] = m_name;
-    station_record["latitude_deg"] = float(m_latitude);
-    station_record["longitude_deg"] = float(m_longitude);
-    station_record["elevation_m"] = float(m_elevation_meters);
-    station_record["url"] = m_station_url;
-
-    return true;
-}
-
-
-
-//std::shared_ptr<std::map<std::string, std::variant<std::string, float>>> 
-bool
-Station::get_latest_observation(std::map<std::string, std::variant<std::string, float>>& obs_map) {
-    
-    cpr::Response r = cpr::Get(cpr::Url{m_observation_url});
-    wlog(logINFO) << "Status code: " << r.status_code << "\n";                  // 200
-    wlog(logINFO) << "header: " << r.header["content-type"] << "\n";       // application/json; charset=utf-8
-    wlog(logINFO) << "text: " << r.text << "\n";                         // JSON text string
-                                                                         //
-    if (r.status_code != 200) {
-        wlog(logERROR) << "ERROR getting station observation. Return code: " << r.status_code;
-        return false;
-    }
-
-    std::string resp = r.text;
-    try {
-        json Doc{json::parse(resp)};
-        wlog(logINFO) << "JSON Doc: " << Doc;
-
-        get_station_id(Doc, obs_map);
-        get_timestamp(Doc, obs_map);
-        get_temperature(Doc, obs_map);
-        get_dewpoint(Doc, obs_map);
-        get_description(Doc, obs_map);
-        get_winddir(Doc, obs_map);
-        get_windspeed(Doc, obs_map);
-        get_windgust(Doc, obs_map);
-        get_barometric_pressure(Doc, obs_map);
-        get_rel_humidity(Doc, obs_map);
-
-    } catch (const json::exception& e) {
-        wlog(logERROR) << "Exception parsing obs json: " << e.what();
-        return false;
-    }
-    //return obs_map;
-    return true;
-}
-
-
+//* PRIVATE
+//* Station get station id from observation data and put into map 
 void
 Station::get_station_id(json Doc, std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
@@ -133,6 +141,8 @@ Station::get_station_id(json Doc, std::map<std::string, std::variant<std::string
 }
 
 
+//* PRIVATE
+//* Station get timestamp from observation data and put into map 
 void
 Station::get_timestamp(json Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
@@ -150,6 +160,8 @@ Station::get_timestamp(json Doc,  std::map<std::string, std::variant<std::string
 }
 
 
+//* PRIVATE
+//* Station get temperature from observation data and put into map 
 void
 Station::get_temperature(json Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
@@ -170,6 +182,8 @@ Station::get_temperature(json Doc,  std::map<std::string, std::variant<std::stri
 }
 
 
+//* PRIVATE
+//* Station get dewpoint from observation data and put into map 
 void
 Station::get_dewpoint(json Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
@@ -190,6 +204,8 @@ Station::get_dewpoint(json Doc,  std::map<std::string, std::variant<std::string,
 }
 
 
+//* PRIVATE
+//* Station get description from observation data and put into map 
 void
 Station::get_description(json Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
@@ -207,6 +223,8 @@ Station::get_description(json Doc,  std::map<std::string, std::variant<std::stri
 }
 
 
+//* PRIVATE
+//* Station get wind direction from observation data and put into map 
 void
 Station::get_winddir(json Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
@@ -224,6 +242,8 @@ Station::get_winddir(json Doc,  std::map<std::string, std::variant<std::string, 
 }
 
 
+//* PRIVATE
+//* Station get wind speed from observation data and put into map 
 void
 Station::get_windspeed(json Doc, std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
@@ -245,6 +265,8 @@ Station::get_windspeed(json Doc, std::map<std::string, std::variant<std::string,
 }
 
 
+//* PRIVATE
+//* Station get wind gust from observation data and put into map 
 void
 Station::get_windgust(json Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
@@ -266,6 +288,8 @@ Station::get_windgust(json Doc,  std::map<std::string, std::variant<std::string,
 }
 
 
+//* PRIVATE
+//* Station get barometric pressure from observation data and put into map 
 void
 Station::get_barometric_pressure(json Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
@@ -287,6 +311,8 @@ Station::get_barometric_pressure(json Doc,  std::map<std::string, std::variant<s
 }
 
 
+//* PRIVATE
+//* Station get relative humidity from observation data and put into map 
 void 
 Station::get_rel_humidity(json Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
@@ -305,14 +331,3 @@ Station::get_rel_humidity(json Doc,  std::map<std::string, std::variant<std::str
 }
 
 
-//void
-//Station::get_station_coordinates() {
-//    if (m_station_json_valid) {
-//        //json Doc(json::parse(m_station_json_data));
-//        //wlog(logINFO) << "DOC: " << Doc << "\n";
-//        //std::cout <<  m_station_json_data["geometry"]["coordinates"] << "\n";
-//        //wlog(logINFO) << "Coordinates: " << coordinates << "\n";
-//
-//
-//    }
-//}
