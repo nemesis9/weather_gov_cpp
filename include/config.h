@@ -10,7 +10,7 @@
 using json = nlohmann::json;
 
 
-const std::vector<std::string> config_list = {"LOG", "HOST", "DB", "STATIONS"};
+const std::vector<std::string> config_list = {"LOG", "HOST", "DB", "STATIONS", "PARAMETERS"};
 
 class Config
 {
@@ -23,6 +23,7 @@ public:
 
     bool get_db_config(std::map<std::string, std::string>&);
 
+    bool get_params_config(std::map<std::string, std::string>&);
 private:
     YAML::Node m_config;
 

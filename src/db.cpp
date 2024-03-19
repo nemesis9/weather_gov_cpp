@@ -1,7 +1,6 @@
 
 #include "db.h"
 
-extern loglevel_e wloglevel;
 
 //* Db object with config
 Db::Db(std::map<std::string, std::string>& db_config) : m_db_config(db_config)
@@ -74,7 +73,7 @@ Db::put_station_record(std::map<std::string, std::variant<std::string, float>>& 
     wlog(logINFO) << "put station record: " << std::get<std::string>(station_record["name"]);
     try {
 
-        wlog(logINFO) << "put station record: establishing connection";
+        wlog(logDEBUG) << "put station record: establishing connection";
         sql::Driver* driver = sql::mariadb::get_driver_instance();
         std::string connect_info = "jdbc:mariadb://" + m_host + ":3306/" + m_database;
         sql::SQLString url(connect_info);

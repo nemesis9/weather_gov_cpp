@@ -1,6 +1,7 @@
 
 #include "yaml-cpp/yaml.h"
 #include <cassert>
+#include <string>
 #include <cpr/cpr.h>
 #include "logger.h"
 #include "config.h"
@@ -11,7 +12,7 @@
 //*
 //* Set the global log level
 //*
-loglevel_e wloglevel = logDEBUG;
+loglevel_e wloglevel = logINFO;
 
 //*
 //* main
@@ -37,6 +38,7 @@ main(int argc, char** argv) {
     std::string base_url;
     std::string stations_url;
     std::map<std::string, std::string> api_urls;
+    std::map<std::string, std::string> params;
 
     //* Try to get the basic data 
     try {
@@ -48,6 +50,21 @@ main(int argc, char** argv) {
 
     } catch (...) {
         wlog(logERROR) << "Exception getting API urls";
+        return -1;
+    }
+
+
+    //* Get the params
+    int obs_interval = 30;
+    try {
+        config.get_params_config(params);
+        //wlog(logINFO) << "params obs interval: " << params["OBS_INTERVAL_SECS"] << "\n";
+        obs_interval = std::stoi(params["OBS_INTERVAL_SECS"]);
+        //obs_interval = std::stoi("20");
+        wlog(logINFO) << "obs_interval: "  << obs_interval;
+
+    } catch (...) {
+        wlog(logERROR) << "Exception getting params";
         return -1;
     }
 
@@ -66,6 +83,8 @@ main(int argc, char** argv) {
     config.get_db_config(db_config);
 
     Db db = Db(db_config);
+
+
 
     //* For all the stations in the config, create a db record if we don't
     //      already have one
@@ -89,6 +108,7 @@ main(int argc, char** argv) {
     }
 
     //* loop over stations and store the latest weather observation
+    wlog(logERROR) << "Looping over stations\n";
     bool loop = true;
     std::map<std::string, std::variant<std::string, float>> obs; 
     while (true) {
@@ -118,7 +138,7 @@ main(int argc, char** argv) {
 
         if (false == loop) break;
         //* Loop every 5 minutes (should be a config item)
-        std::this_thread::sleep_for(std::chrono::seconds(300));
+        std::this_thread::sleep_for(std::chrono::seconds(obs_interval));
         
     }
 }

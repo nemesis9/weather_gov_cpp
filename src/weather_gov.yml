@@ -55,8 +55,11 @@ STATIONS:
 #  "Show Low Municipal"                 : "KSOW"
 #  "Tucson Intl Airport"                : "KTUS"
 #  "WhiteRiver Airport"                 : "KWTR"
-#  "Yuma"                              : "KYUM"
+#  "Yuma"                               : "KYUM"
 
+
+PARAMETERS:
+    OBS_INTERVAL_SECS                  : "20" 
 
 #FORECAST:
 #  FORECAST_URL: "forecast/"
