@@ -6,7 +6,7 @@ LOG:
   ROTATE_FILES: 10
   JOURNAL: False
   LOGDIR: "./"
-  LEVEL: "DEBUG"
+  LEVEL: "WARNING"
   USE_CONSOLE: True
 
 HOST:
@@ -60,17 +60,5 @@ STATIONS:
 
 PARAMETERS:
     OBS_INTERVAL_SECS                  : "20" 
-
-#FORECAST:
-#  FORECAST_URL: "forecast/"
-
-#HISTORY:
-#  HISTORY_URL: "history/"
-
-#HISTORY_SUMMARY:
-#  HISTORY_SUMMARY_URL: "history_summary/"
-
-#KEY:
-#  APIKEY:  "HPF1HR5F36GECF6JAZ9NPM19E"
 
 

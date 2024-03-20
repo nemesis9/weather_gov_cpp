@@ -14,6 +14,8 @@
 //*
 loglevel_e wloglevel = logINFO;
 
+
+
 //*
 //* main
 //*
@@ -29,7 +31,6 @@ main(int argc, char** argv) {
     //*     to the build directory so it is current directory
     YAML::Node _config = YAML::LoadFile("./weather_gov.yml");
     assert(_config.Type() == YAML::NodeType::Map);
-    wlog(logINFO) << "config: " << _config << "\n\n";
 
     //* Instantiate our config object
     Config config = Config(_config);
@@ -58,14 +59,11 @@ main(int argc, char** argv) {
     int obs_interval = 30;
     try {
         config.get_params_config(params);
-        //wlog(logINFO) << "params obs interval: " << params["OBS_INTERVAL_SECS"] << "\n";
         obs_interval = std::stoi(params["OBS_INTERVAL_SECS"]);
-        //obs_interval = std::stoi("20");
-        wlog(logINFO) << "obs_interval: "  << obs_interval;
 
     } catch (...) {
         wlog(logERROR) << "Exception getting params";
-        return -1;
+        wlog(logWARNING) << "Setting obs interval to default 30 seconds";
     }
 
     //* Create a station list
@@ -74,7 +72,6 @@ main(int argc, char** argv) {
     config.get_station_map(station_map);
     for (auto const& station : station_map)
     {
-        wlog(logINFO) << "Creating station:  name: " << station.first << " ID: " << station.second;
         station_list.push_back(Station(station.second, stations_url));
     }
 
@@ -85,45 +82,22 @@ main(int argc, char** argv) {
     Db db = Db(db_config);
 
 
-
     //* For all the stations in the config, create a db record if we don't
     //      already have one
     for (auto s: station_list) {
         std::map<std::string, std::variant<std::string, float>> station_record;
         s.get_station_record(station_record);
-        std::string call_id = std::get<std::string>(station_record["call_id"]);
-        wlog(logDEBUG) << "call_id: " << call_id;
-        std::string name = std::get<std::string>(station_record["name"]);
-        wlog(logDEBUG) << "name: " << name;
-        float latitude = std::get<float>(station_record["latitude_deg"]);
-        wlog(logDEBUG) << "latitude: " << latitude;
-        float longitude = std::get<float>(station_record["longitude_deg"]);
-        wlog(logDEBUG) << "longitude: " << longitude;
-        float elevation = std::get<float>(station_record["elevation_m"]);
-        wlog(logDEBUG) << "elevation: " << elevation;
-        std::string url = std::get<std::string>(station_record["url"]);
-        wlog(logDEBUG) << "url: " << url;
-
         db.put_station_record(station_record);
     }
 
     //* loop over stations and store the latest weather observation
-    wlog(logERROR) << "Looping over stations\n";
     bool loop = true;
     std::map<std::string, std::variant<std::string, float>> obs; 
     while (true) {
 
         for (auto s: station_list) {
+            wlog(logINFO) << "Getting latest observation for station " << s.get_station_identifier();
             s.get_latest_observation(obs);
-            for (auto item: obs) {
-                wlog(logINFO) << "weather_gov: obs item: Key:" << item.first;
-                if ((item.first == "station_id") || (item.first == "description") ||
-                     (item.first == "timestamp_UTC")) {
-                    wlog(logINFO) << "weather_gov: obs       Value: " << std::get<std::string>(item.second);
-                } else {
-                    wlog(logINFO) << "weather_gov: obs       Value: " << std::get<float>(item.second);
-                }
-            }
             std::tuple<bool, std::string> ret = db.put_observation(obs);
             if (std::get<0>(ret) == false) {
                 std::string res = std::get<1>(ret);
@@ -137,7 +111,6 @@ main(int argc, char** argv) {
         }
 
         if (false == loop) break;
-        //* Loop every 5 minutes (should be a config item)
         std::this_thread::sleep_for(std::chrono::seconds(obs_interval));
         
     }

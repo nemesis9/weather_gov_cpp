@@ -5,10 +5,8 @@
 //* Db object with config
 Db::Db(std::map<std::string, std::string>& db_config) : m_db_config(db_config)
 {
-    wlog(logINFO) << "Db constructor";
     for (auto const& db_item : db_config)
     {
-        wlog(logINFO) << "Key: " << db_item.first << " Value: " << db_item.second;
         if (db_item.first == "host") {
             m_host = db_item.second;
         } else if (db_item.first == "database") {
@@ -38,13 +36,11 @@ Db::ensure_tables() {
     sql::Statement *stmt = nullptr;
     sql::Connection *conn = nullptr;
     try {
-        wlog(logINFO) << "ensure tables: establishing connection";
         sql::Driver* driver = sql::mariadb::get_driver_instance();
         std::string connect_info = "jdbc:mariadb://" + m_host + ":3306/" + m_database;
         sql::SQLString url(connect_info);
         sql::Properties properties({{"user", "weather_user"}, {"password", "weather_pass"}});
         conn = driver->connect(url, properties);
-        wlog(logINFO) << "ensure tables: connection established";
 
         stmt = conn->createStatement();
         stmt->execute("CREATE TABLE IF NOT EXISTS station_cpp (call_id VARCHAR(5) PRIMARY KEY, name VARCHAR(80), latitude_deg FLOAT, longitude_deg FLOAT, elevation_m FLOAT,url VARCHAR(80))");
@@ -70,7 +66,6 @@ Db::ensure_tables() {
 //* put station record
 bool
 Db::put_station_record(std::map<std::string, std::variant<std::string, float>>& station_record) {
-    wlog(logINFO) << "put station record: " << std::get<std::string>(station_record["name"]);
     try {
 
         wlog(logDEBUG) << "put station record: establishing connection";
@@ -79,7 +74,6 @@ Db::put_station_record(std::map<std::string, std::variant<std::string, float>>& 
         sql::SQLString url(connect_info);
         sql::Properties properties({{"user", "weather_user"}, {"password", "weather_pass"}});
         sql::Connection *conn = driver->connect(url, properties);
-        wlog(logINFO) << "put station record: connection established";
 
         sql::PreparedStatement  *prep_stmt;
         prep_stmt = conn->prepareStatement("REPLACE INTO station_cpp(call_id, name, latitude_deg, longitude_deg, elevation_m, url) VALUES (?, ?, ?, ?, ?, ?)");
@@ -107,12 +101,10 @@ Db::put_station_record(std::map<std::string, std::variant<std::string, float>>& 
 //* put station observation
 std::tuple<bool, std::string>
 Db::put_observation (std::map<std::string, std::variant<std::string, float>>& obs) {
-    wlog(logINFO) << "put station observation: ";
 
     sql::Connection *conn = nullptr;
     sql::PreparedStatement *prep_stmt = nullptr;
     try {
-        wlog(logINFO) << "put station observation: establishing connection";
         //sql::Statement *stmt;
         sql::Driver* driver = sql::mariadb::get_driver_instance();
         std::string connect_info = "jdbc:mariadb://" + m_host + ":3306/" + m_database;
@@ -120,7 +112,6 @@ Db::put_observation (std::map<std::string, std::variant<std::string, float>>& ob
         sql::Properties properties({{"user", "weather_user"}, {"password", "weather_pass"}});
         //sql::Connection *conn = driver->connect(url, properties);
         conn = driver->connect(url, properties);
-        wlog(logINFO) << "put station observation: connection established";
 
         sql::PreparedStatement  *prep_stmt;
         prep_stmt = conn->prepareStatement("INSERT INTO observation_cpp (station_id,"

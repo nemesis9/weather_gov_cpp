@@ -15,15 +15,12 @@ Config::get_api_urls(std::map<std::string, std::string>& api_urls)
     std::string stations_url;
     try {
         for(YAML::const_iterator it=m_config["HOST"].begin();it!=m_config["HOST"].end();++it) {
-            wlog(logINFO) << "HOST Key: " << it->first.as<std::string>() << " HOST Value: " << it->second.as<std::string>();
             std::string key = it->first.as<std::string>();
             std::string value = it->second.as<std::string>();
             if (key  == "BASE_URL") {
                 base_url = value;
-                wlog(logDEBUG) << "base_url: "  << base_url << "\n";
             } else  if (key == "STATIONS_URL") {
                   stations_url = value;
-                  wlog(logDEBUG) << "stations_url: "  << stations_url << "\n";
             } else {
                 wlog(logERROR) << "Could not find API urls in config" << "\n";
                 throw std::runtime_error("Could not find API urls in config");
@@ -44,12 +41,9 @@ Config::get_api_urls(std::map<std::string, std::string>& api_urls)
 bool
 Config::get_station_map(std::map<std::string, std::string>& station_map) {
     for(const std::string& key : config_list) {
-        wlog(logINFO) << "key = " << key;
 
         if (m_config[key] && key == "STATIONS") {
-            wlog(logINFO) << "Processing stations\n";
             for(YAML::const_iterator it=m_config[key].begin();it!=m_config[key].end();++it) {
-                wlog(logDEBUG) << "Key: " << it->first.as<std::string>() << " Value: " << it->second.as<std::string>();
                 station_map[it->first.as<std::string>()] = it->second.as<std::string>();
             }
         }
@@ -62,12 +56,9 @@ Config::get_station_map(std::map<std::string, std::string>& station_map) {
 bool
 Config::get_db_config(std::map<std::string, std::string>& db_config) {
     for(const std::string& key : config_list) {
-        wlog(logINFO) << "key = " << key;
 
         if (m_config[key] && key == "DB") {
-            wlog(logINFO) << "Processing db config\n";
             for(YAML::const_iterator it=m_config[key].begin();it!=m_config[key].end();++it) {
-                wlog(logDEBUG) << "Key: " << it->first.as<std::string>() << " Value: " << it->second.as<std::string>();
                 db_config[it->first.as<std::string>()] = it->second.as<std::string>();
             }
         }
@@ -76,16 +67,13 @@ Config::get_db_config(std::map<std::string, std::string>& db_config) {
 
 }
 
-
+//* Get the parameters configuration
 bool
 Config::get_params_config(std::map<std::string, std::string>& params_config) {
     for(const std::string& key : config_list) {
-        wlog(logINFO) << "key = " << key;
 
         if (m_config[key] && key == "PARAMETERS") {
-            wlog(logINFO) << "Processing parameters config\n";
             for(YAML::const_iterator it=m_config[key].begin();it!=m_config[key].end();++it) {
-                wlog(logDEBUG) << "config: Key: " << it->first.as<std::string>() << " config: Value: " << it->second.as<std::string>();
                 params_config[it->first.as<std::string>()] = it->second.as<std::string>();
             }
         }

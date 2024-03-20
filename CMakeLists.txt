@@ -19,10 +19,6 @@ set(SOURCES
 	include/logger.h
 )
 
-#set(TEST_SOURCES
-#    src/tests.cpp
-#    src/utf8.cpp
-#)
 
 set(INCLUDES
 	include
@@ -56,11 +52,7 @@ add_custom_target(copy-test-config ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/weath
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/weather_gov.yml
                    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/src/weather_gov.yml
                                                     ${CMAKE_CURRENT_BINARY_DIR}/weather_gov.yml)
-#                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/weather_gov.yml)
 
-#add_executable(tests ${TEST_SOURCES})
-#target_include_directories(tests PRIVATE ${INCLUDES})
-#target_include_directories(utf8 PRIVATE ${INCLUDES})
 target_include_directories(weather_gov PRIVATE ${INCLUDES})
 
 
