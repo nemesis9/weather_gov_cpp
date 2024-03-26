@@ -10,7 +10,7 @@
 class Db
 {
 public:
-    Db(std::map<std::string, std::string>& db_config);
+    Db(const std::map<std::string, std::string>& db_config);
 
     bool put_station_record (std::map<std::string, std::variant<std::string, float>>&);
 
@@ -26,7 +26,7 @@ private:
     std::string m_pass;
     std::string m_station_table;
     std::string m_observation_table;
-    bool m_db_connected = false;
+    //bool m_db_connected = false;
 
 
     bool ensure_tables();

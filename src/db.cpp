@@ -3,7 +3,7 @@
 
 
 //* Db object with config
-Db::Db(std::map<std::string, std::string>& db_config) : m_db_config(db_config)
+Db::Db(const std::map<std::string, std::string>& db_config) : m_db_config(db_config)
 {
     for (auto const& db_item : db_config)
     {

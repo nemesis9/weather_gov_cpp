@@ -3,7 +3,7 @@
 
 
 //* Config constructor, set the config
-Config::Config(YAML::Node config): m_config(config)
+Config::Config(const YAML::Node config): m_config(config)
 {
 }
 

@@ -15,7 +15,7 @@ const std::vector<std::string> config_list = {"LOG", "HOST", "DB", "STATIONS", "
 class Config
 {
 public:
-    Config(YAML::Node config);
+    Config(const YAML::Node config);
 
     bool get_api_urls(std::map<std::string, std::string>&);
 

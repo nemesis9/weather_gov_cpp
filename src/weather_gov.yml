@@ -59,6 +59,6 @@ STATIONS:
 
 
 PARAMETERS:
-    OBS_INTERVAL_SECS                  : "20" 
+    OBS_INTERVAL_SECS                  : "300" 
 
 
