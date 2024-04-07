@@ -50,8 +50,8 @@ bool
 Station::get_latest_observation(std::map<std::string, std::variant<std::string, float>>& obs_map) {
     
     cpr::Response r = cpr::Get(cpr::Url{m_observation_url});
-    wlog(logDEBUG) << "Status code: " << r.status_code << "\n";                  // 200
-                                                                         //
+    wlog(logDEBUG) << "Status code: " << r.status_code << "\n";          // 200
+
     if (r.status_code != 200) {
         wlog(logERROR) << "ERROR getting station observation. Return code: " << r.status_code;
         return false;
@@ -141,7 +141,7 @@ Station::get_timestamp(const json& Doc,  std::map<std::string, std::variant<std:
     } catch (const json::exception& e) {
         wlog(logERROR) << "Exception parsing obs json timestamp: " << e.what();
         obs_map["timestamp_UTC"] = "None";
-        wlog(logWARNING) << "Doc timestamp setting to None";
+        wlog(logWARNING) << "Station " << m_stationIdentifier << " : timestamp setting to None";
     }
 
     return;
@@ -161,7 +161,7 @@ Station::get_temperature(const json& Doc,  std::map<std::string, std::variant<st
         wlog(logERROR) << "Exception parsing obs json temperature: " << e.what();
         obs_map["temperature_C"] = float(-999.99);
         obs_map["temperature_F"] = float(-999.99);
-        wlog(logWARNING) << "Doc temperature setting null to -999.99";
+        wlog(logWARNING) << "Station " << m_stationIdentifier << " : temperature setting null to -999.99";
     }
 
     return;
@@ -181,7 +181,7 @@ Station::get_dewpoint(const json& Doc,  std::map<std::string, std::variant<std::
         wlog(logERROR) << "Exception parsing obs json dewpoint: " << e.what();
         obs_map["dewpoint_C"] = float(-999.99);
         obs_map["dewpoint_F"] = float(-999.99);
-        wlog(logWARNING) << "Doc dewpoint setting null to -999.99";
+        wlog(logWARNING) << "Station " << m_stationIdentifier << " : dewpoint setting null to -999.99";
     }
 
     return;
@@ -199,7 +199,7 @@ Station::get_description(const json& Doc,  std::map<std::string, std::variant<st
     } catch (const json::exception& e) {
         wlog(logERROR) << "Exception parsing obs json description: " << e.what();
         obs_map["description"] = "None";
-        wlog(logWARNING) << "Doc description set to None";
+        wlog(logWARNING) << "Station " << m_stationIdentifier << " : description set to None";
     }
 
     return;
@@ -217,7 +217,7 @@ Station::get_winddir(const json& Doc,  std::map<std::string, std::variant<std::s
     } catch (const json::exception& e) {
         wlog(logERROR) << "Exception parsing obs json wind direction: " << e.what();
         obs_map["wind_dir"] = float(-999.99);
-        wlog(logWARNING) << "Doc winddir setting null to -999.99";
+        wlog(logWARNING) << "Station " << m_stationIdentifier << " : winddir setting null to -999.99";
     }
 
     return;
@@ -238,7 +238,7 @@ Station::get_windspeed(const json& Doc, std::map<std::string, std::variant<std::
         wlog(logERROR) << "Exception parsing obs json wind speed: " << e.what();
         obs_map["wind_spd_km_h"] = float(-999.99);
         obs_map["wind_spd_mi_h"] = float(-999.99);
-        wlog(logWARNING) << "Doc windspeed setting null to -999.99";
+        wlog(logWARNING) << "Station " << m_stationIdentifier << " : windspeed setting null to -999.99";
     }
 
     return;
@@ -259,7 +259,7 @@ Station::get_windgust(const json& Doc,  std::map<std::string, std::variant<std::
         wlog(logERROR) << "Exception parsing obs json wind gust: " << e.what();
         obs_map["wind_gust_km_h"] = float(-999.99);
         obs_map["wind_gust_mi_h"] = float(-999.99);
-        wlog(logWARNING) << "Doc windgust setting null to -999.99";
+        wlog(logWARNING) << "Station " << m_stationIdentifier << " : windgust setting null to -999.99";
     }
 
     return;
@@ -280,7 +280,7 @@ Station::get_barometric_pressure(const json& Doc,  std::map<std::string, std::va
         wlog(logERROR) << "Exception parsing obs json barometricPressure: " << e.what();
         obs_map["baro_pres_pa"] = float(-999.99);
         obs_map["baro_pres_inHg"] = float(-999.99);
-        wlog(logWARNING) << "Doc barometricPressure setting null to -999.99";
+        wlog(logWARNING) << "Station " << m_stationIdentifier << " : barometricPressure setting null to -999.99";
     }
 
     return;
@@ -298,7 +298,7 @@ Station::get_rel_humidity(const json& Doc,  std::map<std::string, std::variant<s
     } catch (const json::exception& e) {
         wlog(logERROR) << "Exception parsing obs json rel_humidity: " << e.what();
         obs_map["rel_humidity"] = float(-999.99);
-        wlog(logWARNING) << "Doc rel_humidity setting null to -999.99";
+        wlog(logWARNING) << "Station " << m_stationIdentifier << " : rel_humidity setting null to -999.99";
     }
 
     return;
