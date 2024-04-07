@@ -9,6 +9,8 @@ Db::Db(const std::map<std::string, std::string>& db_config) : m_db_config(db_con
     {
         if (db_item.first == "host") {
             m_host = db_item.second;
+        } else if (db_item.first == "port") {
+            m_port = db_item.second;
         } else if (db_item.first == "database") {
             m_database = db_item.second;
         } else if (db_item.first == "user") {
@@ -29,6 +31,23 @@ Db::Db(const std::map<std::string, std::string>& db_config) : m_db_config(db_con
 
 
 //* PRIVATE
+std::string 
+Db::make_create_station_table_string() { 
+    std::ostringstream stringStream;
+    stringStream <<  "CREATE TABLE IF NOT EXISTS " << m_station_table << " (call_id VARCHAR(5) PRIMARY KEY, name VARCHAR(80), latitude_deg FLOAT, longitude_deg FLOAT, elevation_m FLOAT,url VARCHAR(80))";
+    return stringStream.str();
+    //std::string copyOfStr = stringStream.str();
+    //return copyOfStr;
+}
+
+
+std::string 
+Db::make_create_observation_table_string() { 
+    std::ostringstream stringStream;
+    stringStream << "CREATE TABLE IF NOT EXISTS " << m_observation_table << " (station_id VARCHAR(20), timestamp_UTC VARCHAR(40), temperature_C FLOAT, temperature_F FLOAT, dewpoint_C FLOAT, dewpoint_F FLOAT, description VARCHAR(40), wind_dir FLOAT, wind_spd_km_h FLOAT, wind_spd_mi_h FLOAT, wind_gust_km_h FLOAT, wind_gust_mi_h FLOAT, baro_pres_pa FLOAT, baro_pres_inHg FLOAT, rel_humidity FLOAT, PRIMARY KEY (station_id, timestamp_UTC))";
+    return stringStream.str();
+}
+
 //* make sure we have our db tables
 bool
 Db::ensure_tables() {
@@ -37,16 +56,18 @@ Db::ensure_tables() {
     sql::Connection *conn = nullptr;
     try {
         sql::Driver* driver = sql::mariadb::get_driver_instance();
-        std::string connect_info = "jdbc:mariadb://" + m_host + ":3306/" + m_database;
+        std::string connect_info = "jdbc:mariadb://" + m_host + ":" + m_port + "/" + m_database;
         sql::SQLString url(connect_info);
-        sql::Properties properties({{"user", "weather_user"}, {"password", "weather_pass"}});
+        sql::Properties properties({{"user", m_user}, {"password", m_pass}});
         conn = driver->connect(url, properties);
 
-        stmt = conn->createStatement();
-        stmt->execute("CREATE TABLE IF NOT EXISTS station_cpp (call_id VARCHAR(5) PRIMARY KEY, name VARCHAR(80), latitude_deg FLOAT, longitude_deg FLOAT, elevation_m FLOAT,url VARCHAR(80))");
-        stmt->execute("SELECT * from station_cpp");
+        std::string create_station_table_str = make_create_station_table_string();
 
-        stmt->execute("CREATE TABLE IF NOT EXISTS observation_cpp (station_id VARCHAR(20), timestamp_UTC VARCHAR(40), temperature_C FLOAT, temperature_F FLOAT, dewpoint_C FLOAT, dewpoint_F FLOAT, description VARCHAR(40), wind_dir FLOAT, wind_spd_km_h FLOAT, wind_spd_mi_h FLOAT, wind_gust_km_h FLOAT, wind_gust_mi_h FLOAT, baro_pres_pa FLOAT, baro_pres_inHg FLOAT, rel_humidity FLOAT, PRIMARY KEY (station_id, timestamp_UTC))");
+        stmt = conn->createStatement();
+        stmt->execute(create_station_table_str);
+
+        std::string create_observation_table_str = make_create_observation_table_string();
+        stmt->execute(create_observation_table_str);
 
         delete stmt;
         delete conn;
@@ -60,6 +81,23 @@ Db::ensure_tables() {
 
 }
 
+std::string 
+Db::make_insert_station_table_string() { 
+    std::ostringstream stringStream;
+    stringStream << "REPLACE INTO " << m_station_table << " (call_id, name, latitude_deg, longitude_deg, elevation_m, url) VALUES (?, ?, ?, ?, ?, ?)";
+    return stringStream.str();
+}
+
+std::string 
+Db::make_insert_observation_table_string() { 
+    std::ostringstream stringStream;
+    stringStream << "INSERT INTO " << m_observation_table << " (station_id,"
+            "timestamp_UTC, temperature_C, temperature_F, dewpoint_C,"
+            "dewpoint_F, description, wind_dir, wind_spd_km_h, wind_spd_mi_h,"
+            "wind_gust_km_h, wind_gust_mi_h, baro_pres_pa, baro_pres_inHg,"
+            "rel_humidity) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    return stringStream.str();
+}
 
 
 //* PUBLIC
@@ -70,13 +108,14 @@ Db::put_station_record(std::map<std::string, std::variant<std::string, float>>& 
 
         wlog(logDEBUG) << "put station record: establishing connection";
         sql::Driver* driver = sql::mariadb::get_driver_instance();
-        std::string connect_info = "jdbc:mariadb://" + m_host + ":3306/" + m_database;
+        std::string connect_info = "jdbc:mariadb://" + m_host + ":" + m_port + "/" + m_database;
         sql::SQLString url(connect_info);
-        sql::Properties properties({{"user", "weather_user"}, {"password", "weather_pass"}});
+        sql::Properties properties({{"user", m_user}, {"password", m_pass}});
         sql::Connection *conn = driver->connect(url, properties);
 
         sql::PreparedStatement  *prep_stmt;
-        prep_stmt = conn->prepareStatement("REPLACE INTO station_cpp(call_id, name, latitude_deg, longitude_deg, elevation_m, url) VALUES (?, ?, ?, ?, ?, ?)");
+        std::string insert_station_table_str = make_insert_station_table_string();
+        prep_stmt = conn->prepareStatement(insert_station_table_str);
 
         prep_stmt->setString(1, std::get<std::string>(station_record["call_id"]));
         prep_stmt->setString(2, std::get<std::string>(station_record["name"]));
@@ -105,20 +144,15 @@ Db::put_observation (std::map<std::string, std::variant<std::string, float>>& ob
     sql::Connection *conn = nullptr;
     sql::PreparedStatement *prep_stmt = nullptr;
     try {
-        //sql::Statement *stmt;
         sql::Driver* driver = sql::mariadb::get_driver_instance();
-        std::string connect_info = "jdbc:mariadb://" + m_host + ":3306/" + m_database;
+        std::string connect_info = "jdbc:mariadb://" + m_host + ":" + m_port + "/" + m_database;
         sql::SQLString url(connect_info);
-        sql::Properties properties({{"user", "weather_user"}, {"password", "weather_pass"}});
-        //sql::Connection *conn = driver->connect(url, properties);
+        sql::Properties properties({{"user", m_user}, {"password", m_pass}});
         conn = driver->connect(url, properties);
 
         sql::PreparedStatement  *prep_stmt;
-        prep_stmt = conn->prepareStatement("INSERT INTO observation_cpp (station_id,"
-            "timestamp_UTC, temperature_C, temperature_F, dewpoint_C,"
-            "dewpoint_F, description, wind_dir, wind_spd_km_h, wind_spd_mi_h,"
-            "wind_gust_km_h, wind_gust_mi_h, baro_pres_pa, baro_pres_inHg,"
-            "rel_humidity) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        std::string insert_observation_table_str = make_insert_observation_table_string();
+        prep_stmt = conn->prepareStatement(insert_observation_table_str);
 
         prep_stmt->setString(1, std::get<std::string>(obs["station_id"]));
         prep_stmt->setString(2, std::get<std::string>(obs["timestamp_UTC"]));

@@ -21,6 +21,7 @@ private:
     std::map<std::string, std::string> m_db_config;
 
     std::string m_host;
+    std::string m_port;
     std::string m_database;
     std::string m_user;
     std::string m_pass;
@@ -29,6 +30,10 @@ private:
     //bool m_db_connected = false;
 
 
+    std::string make_create_station_table_string();
+    std::string make_create_observation_table_string();
+    std::string make_insert_station_table_string(); 
+    std::string make_insert_observation_table_string(); 
     bool ensure_tables();
 };
 
