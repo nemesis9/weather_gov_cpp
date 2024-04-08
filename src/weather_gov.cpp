@@ -84,8 +84,8 @@ main(int argc, char** argv) {
 
     //* For all the stations in the config, create a db record if we don't
     //      already have one
+    std::map<std::string, std::variant<std::string, float>> station_record;
     for (auto s: station_list) {
-        std::map<std::string, std::variant<std::string, float>> station_record;
         s.get_station_record(station_record);
         db.put_station_record(station_record);
     }
