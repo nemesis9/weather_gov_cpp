@@ -5,6 +5,8 @@
 #include <format>
 #include <iostream>
 #include <sstream>
+#include <fstream>
+#include <string>
 #include <map>
 
 /*  From here:
@@ -42,12 +44,21 @@ public:
         const auto now = std::chrono::system_clock::now();
         //std::cout << std::format("{:%FT%TZ}", now) << '\n';
         _buffer << std::format("{:%FT%TZ}", now)  << " " << wloglevel_strings[_loglevel] << ": ";
+        ostrm.open("weather_gov.log", std::ios::out | std::ios::app);
+        ostrm << std::format("{:%FT%TZ}", now)  << " " << wloglevel_strings[_loglevel] << ": ";
     }
+
+    //logIt_f(loglevel_e _loglevel = logERROR) {
+    //    const auto now = std::chrono::system_clock::now();
+    //    //std::cout << std::format("{:%FT%TZ}", now) << '\n';
+    //    _buffer << std::format("{:%FT%TZ}", now)  << " " << wloglevel_strings[_loglevel] << ": ";
+    //}
 
     template <typename T>
     logIt & operator<<(T const & value)
     {
         _buffer << value;
+        ostrm << value;
         return *this;
     }
 
@@ -57,10 +68,12 @@ public:
         // This is atomic according to the POSIX standard
         // http://www.gnu.org/s/libc/manual/html_node/Streams-and-Threads.html
         std::cerr << _buffer.str();
+        ostrm << std::endl;
     }
 
 private:
     std::ostringstream _buffer;
+    std::ofstream ostrm;
 
     std::map<loglevel_e, std::string> wloglevel_strings{{logERROR, "ERROR ",}, {logWARNING, "WARNING "}, 
         {logINFO, "INFO"}, {logDEBUG, "DEBUG"}, {logDEBUG1, "DEBUG1"}, {logDEBUG2, "DEBUG2"}, 
