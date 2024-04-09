@@ -48,7 +48,7 @@ Station::get_station_record(std::map<std::string, std::variant<std::string, floa
 //* Station interface to return latest station observation data
 bool
 Station::get_latest_observation(std::map<std::string, std::variant<std::string, float>>& obs_map) {
-    
+
     cpr::Response r = cpr::Get(cpr::Url{m_observation_url});
     wlog(logDEBUG) << "Status code: " << r.status_code << "\n";          // 200
 
@@ -82,7 +82,7 @@ Station::get_latest_observation(std::map<std::string, std::variant<std::string, 
 
 
 //* PRIVATE
-//* Station object get station data 
+//* Station object get station data
 void
 Station::get_station_json_data() {
 
@@ -110,10 +110,11 @@ Station::get_station_json_data() {
         m_elevation_meters = Doc[0]["properties"]["elevation"]["value"];
         m_elevation_feet = m_elevation_meters * 3.28084;
 
+        m_station_json_valid = true;
     } catch (const json::exception &e) {
         wlog(logERROR) << "Exception parsing station json: " << e.what() << "\n";
+        m_longitude = m_latitude = m_elevation_meters = m_elevation_feet = 0.0;
         m_station_json_valid = false;
-        m_station_json_data = {};
     }
 
 }
@@ -121,18 +122,18 @@ Station::get_station_json_data() {
 
 
 //* PRIVATE
-//* Station get station id from observation data and put into map 
+//* Station get station id from observation data and put into map
 void
 Station::get_station_id(const json& Doc, std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
     obs_map["station_id"] = m_stationIdentifier;
- 
+
     return;
 }
 
 
 //* PRIVATE
-//* Station get timestamp from observation data and put into map 
+//* Station get timestamp from observation data and put into map
 void
 Station::get_timestamp(const json& Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
@@ -150,7 +151,7 @@ Station::get_timestamp(const json& Doc,  std::map<std::string, std::variant<std:
 
 
 //* PRIVATE
-//* Station get temperature from observation data and put into map 
+//* Station get temperature from observation data and put into map
 void
 Station::get_temperature(const json& Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
@@ -170,7 +171,7 @@ Station::get_temperature(const json& Doc,  std::map<std::string, std::variant<st
 
 
 //* PRIVATE
-//* Station get dewpoint from observation data and put into map 
+//* Station get dewpoint from observation data and put into map
 void
 Station::get_dewpoint(const json& Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
@@ -190,7 +191,7 @@ Station::get_dewpoint(const json& Doc,  std::map<std::string, std::variant<std::
 
 
 //* PRIVATE
-//* Station get description from observation data and put into map 
+//* Station get description from observation data and put into map
 void
 Station::get_description(const json& Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
@@ -208,7 +209,7 @@ Station::get_description(const json& Doc,  std::map<std::string, std::variant<st
 
 
 //* PRIVATE
-//* Station get wind direction from observation data and put into map 
+//* Station get wind direction from observation data and put into map
 void
 Station::get_winddir(const json& Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
@@ -226,7 +227,7 @@ Station::get_winddir(const json& Doc,  std::map<std::string, std::variant<std::s
 
 
 //* PRIVATE
-//* Station get wind speed from observation data and put into map 
+//* Station get wind speed from observation data and put into map
 void
 Station::get_windspeed(const json& Doc, std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
@@ -247,7 +248,7 @@ Station::get_windspeed(const json& Doc, std::map<std::string, std::variant<std::
 
 
 //* PRIVATE
-//* Station get wind gust from observation data and put into map 
+//* Station get wind gust from observation data and put into map
 void
 Station::get_windgust(const json& Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
@@ -268,7 +269,7 @@ Station::get_windgust(const json& Doc,  std::map<std::string, std::variant<std::
 
 
 //* PRIVATE
-//* Station get barometric pressure from observation data and put into map 
+//* Station get barometric pressure from observation data and put into map
 void
 Station::get_barometric_pressure(const json& Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
@@ -289,8 +290,8 @@ Station::get_barometric_pressure(const json& Doc,  std::map<std::string, std::va
 
 
 //* PRIVATE
-//* Station get relative humidity from observation data and put into map 
-void 
+//* Station get relative humidity from observation data and put into map
+void
 Station::get_rel_humidity(const json& Doc,  std::map<std::string, std::variant<std::string, float>>& obs_map) {
 
     try {

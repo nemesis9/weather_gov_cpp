@@ -20,14 +20,15 @@ loglevel_e wloglevel = logINFO;
 * main
 *
 * Desc: controls overall process
-*       1. Start log.
+*       1. Start log. Currently very simple
+*              and doesn't use the LOG config
 *       2. Get config.
 *       3. Parse config to get items needed to
-*             instantiate stations.
+*              instantiate stations.
 *       4. Get stations from config.
 *       5. Create a DB object.
 *       6. Loop over stations, getting observations
-*             and storing them in the DB.
+*              and storing them in the DB.
 *
 */
 int
@@ -111,16 +112,20 @@ main(int argc, char** argv) {
 
         for (auto s: station_list) {
             wlog(logINFO) << "Getting latest observation for station " << s.get_station_identifier();
-            s.get_latest_observation(obs);
-            std::tuple<bool, std::string> ret = db.put_observation(obs);
-            if (std::get<0>(ret) == false) {
-                std::string res = std::get<1>(ret);
-                 if (res.find("Duplicate") != std::string::npos) {
-                     wlog(logINFO) << "weather_gov igoring duplicate record";
-                 } else {
-                     wlog(logERROR) << "weather_gov: ERROR storing station observation"
-                                " for station " << std::get<std::string>(obs["station_id"]) << "\n";
-                 }
+            bool res = s.get_latest_observation(obs);
+            if (false == res) {
+                wlog(logERROR) << "main: Error getting observation for station " << s.get_station_identifier();
+            } else {
+                std::tuple<bool, std::string> ret = db.put_observation(obs);
+                if (std::get<0>(ret) == false) {
+                    std::string res = std::get<1>(ret);
+                     if (res.find("Duplicate") != std::string::npos) {
+                         wlog(logINFO) << "weather_gov igoring duplicate record";
+                     } else {
+                         wlog(logERROR) << "weather_gov: ERROR storing station observation"
+                                    " for station " << std::get<std::string>(obs["station_id"]) << "\n";
+                     }
+                }
             }
         }
 

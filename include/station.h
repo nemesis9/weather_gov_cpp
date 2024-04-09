@@ -30,7 +30,6 @@ private:
     std::string m_stations_url;
     bool m_station_json_valid;
     std::string m_station_url;
-    std::array<std::string, 1> m_station_json_data;
     std::string m_observation_url;
 
     std::string m_name;
