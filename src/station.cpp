@@ -13,7 +13,7 @@ Station::Station(const std::string stationIdentifier, const std::string stations
                         m_stations_url(stations_url),
                         m_station_json_valid(false) {
 
-    m_station_url = m_stations_url + "/stations/" + m_stationIdentifier;
+    m_station_url = m_stations_url + m_stationIdentifier;
     wlog(logINFO) << "Station created with url: " << m_station_url;
     m_observation_url = m_station_url + "/observations/latest";
     get_station_json_data();
@@ -117,6 +117,7 @@ Station::get_station_json_data() {
     }
 
 }
+
 
 
 //* PRIVATE

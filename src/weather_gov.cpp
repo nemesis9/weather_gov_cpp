@@ -16,9 +16,20 @@ loglevel_e wloglevel = logINFO;
 
 
 
-//*
-//* main
-//*
+/**
+* main
+*
+* Desc: controls overall process
+*       1. Start log.
+*       2. Get config.
+*       3. Parse config to get items needed to
+*             instantiate stations.
+*       4. Get stations from config.
+*       5. Create a DB object.
+*       6. Loop over stations, getting observations
+*             and storing them in the DB.
+*
+*/
 int
 main(int argc, char** argv) {
     /* A little log test */
@@ -26,7 +37,7 @@ main(int argc, char** argv) {
     wlog(logWARNING) << "Weather_gov is under construction";
     wlog(logERROR) << "Weather_gov may produce errors";
 
-    //* See if we can load the config. Bomb if we dont get it.                
+    //* See if we can load the config. Bomb if we dont get it.
     //* There is cmake copy target that copies the yml file
     //*     to the build directory so it is current directory
     YAML::Node _config = YAML::LoadFile("./weather_gov.yml");
@@ -35,28 +46,24 @@ main(int argc, char** argv) {
     //* Instantiate our config object
     Config config = Config(_config);
 
-    //* Allocate objects to receive basic info
-    std::string base_url;
-    std::string stations_url;
-    std::map<std::string, std::string> api_urls;
-    std::map<std::string, std::string> params;
 
-    //* Try to get the basic data 
+    //* Try to get the host data
+    std::string stations_url;
+    std::map<std::string, std::string> host_map;
     try {
-        config.get_api_urls(api_urls);
-        base_url = api_urls["BASE_URL"];
-        wlog(logINFO) << "base_url: "  << base_url;
-        stations_url = api_urls["BASE_URL"];
+        config.get_host_map(host_map);
+        stations_url = host_map["STATIONS_URL"];
         wlog(logINFO) << "stations_url: "  << stations_url;
 
     } catch (...) {
-        wlog(logERROR) << "Exception getting API urls";
+        wlog(logERROR) << "main: Exception getting Stations url from config";
         return -1;
     }
 
 
     //* Get the params
     int obs_interval = 30;
+    std::map<std::string, std::string> params;
     try {
         config.get_params_config(params);
         obs_interval = std::stoi(params["OBS_INTERVAL_SECS"]);
@@ -70,15 +77,22 @@ main(int argc, char** argv) {
     std::vector<Station> station_list;
     std::map<std::string, std::string> station_map;
     config.get_station_map(station_map);
-    for (auto const& station : station_map)
-    {
-        station_list.push_back(Station(station.second, stations_url));
+    if (station_map.empty()) {
+        wlog(logERROR) << "main : FATAL Could not get station map from config";
+        return -1;
+    } else {
+        for (auto const& station : station_map) {
+            station_list.push_back(Station(station.second, stations_url));
+        }
     }
 
     //* Create a db object
     std::map<std::string, std::string> db_config;
     config.get_db_config(db_config);
-
+    if (db_config.empty()) {
+        wlog(logERROR) << "main: FATAL: Could not get db config";
+        return -1;
+    }
     Db db = Db(db_config);
 
 
@@ -92,7 +106,7 @@ main(int argc, char** argv) {
 
     //* loop over stations and store the latest weather observation
     bool loop = true;
-    std::map<std::string, std::variant<std::string, float>> obs; 
+    std::map<std::string, std::variant<std::string, float>> obs;
     while (true) {
 
         for (auto s: station_list) {
@@ -104,7 +118,7 @@ main(int argc, char** argv) {
                  if (res.find("Duplicate") != std::string::npos) {
                      wlog(logINFO) << "weather_gov igoring duplicate record";
                  } else {
-                     wlog(logERROR) << "weather_gov: ERROR storing station observation" 
+                     wlog(logERROR) << "weather_gov: ERROR storing station observation"
                                 " for station " << std::get<std::string>(obs["station_id"]) << "\n";
                  }
             }
@@ -112,6 +126,6 @@ main(int argc, char** argv) {
 
         if (false == loop) break;
         std::this_thread::sleep_for(std::chrono::seconds(obs_interval));
-        
+
     }
 }

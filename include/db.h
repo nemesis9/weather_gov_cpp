@@ -27,8 +27,6 @@ private:
     std::string m_pass;
     std::string m_station_table;
     std::string m_observation_table;
-    //bool m_db_connected = false;
-
 
     std::string make_create_station_table_string();
     std::string make_create_observation_table_string();

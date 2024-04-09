@@ -2,9 +2,17 @@
 #include "db.h"
 
 
-//* Db object with config
+/* Db constructor
+ *
+ * Arguments: db config
+ *
+ * Throws std::runtime_error
+ *     if config is incomplete
+*/
 Db::Db(const std::map<std::string, std::string>& db_config) : m_db_config(db_config)
 {
+
+    m_host = m_port = m_database = m_user = m_pass = m_station_table = m_observation_table = "";
     for (auto const& db_item : db_config)
     {
         if (db_item.first == "host") {
@@ -26,13 +34,25 @@ Db::Db(const std::map<std::string, std::string>& db_config) : m_db_config(db_con
         }
     }
 
+    if ((m_host == "") || (m_port == "") || (m_database == "") || (m_user == "") ||
+        (m_pass == "") || (m_station_table == "") || (m_observation_table == "")) {
+        throw std::runtime_error("DB: Config is incomplete. One or more config items is missing");
+    }
     ensure_tables();
 }
 
 
 //* PRIVATE
-std::string 
-Db::make_create_station_table_string() { 
+//
+/* Name: make_create_station_table_string
+ *
+ * Arguments: none
+ *
+ * creates the string argument for creating the station table
+ *
+*/
+std::string
+Db::make_create_station_table_string() {
     std::ostringstream stringStream;
     stringStream <<  "CREATE TABLE IF NOT EXISTS " << m_station_table << " (call_id VARCHAR(5) PRIMARY KEY, name VARCHAR(80), latitude_deg FLOAT, longitude_deg FLOAT, elevation_m FLOAT,url VARCHAR(80))";
     return stringStream.str();
@@ -40,15 +60,29 @@ Db::make_create_station_table_string() {
     //return copyOfStr;
 }
 
-
-std::string 
-Db::make_create_observation_table_string() { 
+/* Name: make_create_observation_table_string
+ *
+ * Arguments: none
+ *
+ * creates the string argument for creating the observation table
+ *
+*/
+std::string
+Db::make_create_observation_table_string() {
     std::ostringstream stringStream;
     stringStream << "CREATE TABLE IF NOT EXISTS " << m_observation_table << " (station_id VARCHAR(20), timestamp_UTC VARCHAR(40), temperature_C FLOAT, temperature_F FLOAT, dewpoint_C FLOAT, dewpoint_F FLOAT, description VARCHAR(40), wind_dir FLOAT, wind_spd_km_h FLOAT, wind_spd_mi_h FLOAT, wind_gust_km_h FLOAT, wind_gust_mi_h FLOAT, baro_pres_pa FLOAT, baro_pres_inHg FLOAT, rel_humidity FLOAT, PRIMARY KEY (station_id, timestamp_UTC))";
     return stringStream.str();
 }
 
-//* make sure we have our db tables
+/* Name: ensure tables
+ *
+ * Arguments: none
+ *
+ * make sure the station table and the
+ *     observation table exist if not
+ *     there already
+ *
+*/
 bool
 Db::ensure_tables() {
 
@@ -81,15 +115,31 @@ Db::ensure_tables() {
 
 }
 
-std::string 
-Db::make_insert_station_table_string() { 
+/* Name: make_insert_station_table_string
+ *
+ * Arguments: none
+ *
+ * creates the query string for inserting
+ *     a station into the station table
+ *
+*/
+std::string
+Db::make_insert_station_table_string() {
     std::ostringstream stringStream;
     stringStream << "REPLACE INTO " << m_station_table << " (call_id, name, latitude_deg, longitude_deg, elevation_m, url) VALUES (?, ?, ?, ?, ?, ?)";
     return stringStream.str();
 }
 
-std::string 
-Db::make_insert_observation_table_string() { 
+/* Name: make_insert_observation_table_string
+ *
+ * Arguments: none
+ *
+ * creates the query string for inserting
+ *     a observation into the observation table
+ *
+*/
+std::string
+Db::make_insert_observation_table_string() {
     std::ostringstream stringStream;
     stringStream << "INSERT INTO " << m_observation_table << " (station_id,"
             "timestamp_UTC, temperature_C, temperature_F, dewpoint_C,"
@@ -101,7 +151,14 @@ Db::make_insert_observation_table_string() {
 
 
 //* PUBLIC
-//* put station record
+
+/* Name: put_station_record
+ *
+ * Arguments: station record
+ *
+ * inserts a station record into the database
+ *
+*/
 bool
 Db::put_station_record(std::map<std::string, std::variant<std::string, float>>& station_record) {
     try {
@@ -137,7 +194,15 @@ Db::put_station_record(std::map<std::string, std::variant<std::string, float>>& 
 
 
 //* PUBLIC
-//* put station observation
+
+/* Name: put_observation
+ *
+ * Arguments: observation record
+ *
+ * inserts a station observation record into the database
+ *
+*/
+
 std::tuple<bool, std::string>
 Db::put_observation (std::map<std::string, std::variant<std::string, float>>& obs) {
 

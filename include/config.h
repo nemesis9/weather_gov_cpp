@@ -17,7 +17,7 @@ class Config
 public:
     Config(const YAML::Node config);
 
-    bool get_api_urls(std::map<std::string, std::string>&);
+    bool get_host_map(std::map<std::string, std::string>&);
 
     bool get_station_map(std::map<std::string, std::string>&);
 
